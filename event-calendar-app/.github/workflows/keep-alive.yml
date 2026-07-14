@@ -1,0 +1,19 @@
+name: Keep backend and database awake
+
+# Pings your live backend every 3 days so:
+#  - Your Supabase free-tier project never goes 7 days without activity (which
+#    would auto-pause it)
+#  - Render's free web service doesn't matter here since real user traffic
+#    wakes it anyway, but this doesn't hurt
+
+on:
+  schedule:
+    - cron: '0 6 */3 * *'  # every 3 days at 06:00 UTC
+  workflow_dispatch: {}     # lets you also trigger it manually from the Actions tab
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping backend
+        run: curl -sf "${{ secrets.BACKEND_URL }}/api/events/dates?year=2026&month=1" || exit 1

@@ -1,0 +1,20 @@
+{
+  "expo": {
+    "name": "Events Near You",
+    "slug": "event-calendar-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#4f46e5"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.yourname.eventcalendar"
+    },
+    "android": {
+      "package": "com.yourname.eventcalendar"
+    }
+  }
+}
