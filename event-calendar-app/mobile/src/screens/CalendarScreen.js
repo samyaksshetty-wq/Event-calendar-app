@@ -4,12 +4,14 @@ import {
   Text,
   StyleSheet,
   ActivityIndicator,
-  TouchableOpacity,
   ScrollView,
 } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { getEventDatesForMonth, getEventsForDate } from '../api/api';
 import { COLORS, RADIUS, SPACING } from '../theme';
+import FadeSlideIn from '../components/FadeSlideIn';
+import AnimatedPressable from '../components/AnimatedPressable';
+import BackgroundDecoration from '../components/BackgroundDecoration';
 
 function formatDateHeading(dateString) {
   const d = new Date(dateString + 'T00:00:00');
@@ -55,7 +57,6 @@ export default function CalendarScreen({ navigation }) {
       .finally(() => setDayLoading(false));
   }, []);
 
-  // Build markedDates including the selected-day ring, without losing the event dots
   const displayMarks = { ...markedDates };
   if (selectedDate) {
     displayMarks[selectedDate] = {
@@ -66,25 +67,30 @@ export default function CalendarScreen({ navigation }) {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
-      <View style={styles.headerBlock}>
-        <Text style={styles.eyebrow}>WHAT'S ON</Text>
-        <Text style={styles.header}>Events Near You</Text>
-        <Text style={styles.description}>
-          Browse what's happening day by day — pick a date to see event times, venues, and brochures.
-        </Text>
-      </View>
+    <View style={styles.screen}>
+      <BackgroundDecoration />
+      <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+        <FadeSlideIn style={styles.headerBlock}>
+          <Text style={styles.eyebrow}>WHAT'S ON</Text>
+          <Text style={styles.header}>Namma Events</Text>
+          <Text style={styles.description}>
+            Search your favourite events and discover what's happening near you — from concerts
+            and workshops to community meetups, browse the calendar and never miss what matters to you.
+          </Text>
+        </FadeSlideIn>
 
-      <View style={styles.actionRow}>
-        <TouchableOpacity style={styles.actionButton} onPress={() => navigation.navigate('Search')} activeOpacity={0.85}>
-          <Text style={styles.actionButtonText}>Search events</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButtonOutline} onPress={() => navigation.navigate('Contact')} activeOpacity={0.85}>
-          <Text style={styles.actionButtonOutlineText}>List your event</Text>
-        </TouchableOpacity>
-      </View>
+      <FadeSlideIn delay={90} style={styles.actionRow}>
+        <AnimatedPressable style={styles.actionButton} onPress={() => navigation.navigate('Search')}>
+          <Text style={styles.actionButtonIcon}>🔍</Text>
+          <Text style={styles.actionButtonText}>Search Events</Text>
+        </AnimatedPressable>
+        <AnimatedPressable style={styles.actionButtonOutline} onPress={() => navigation.navigate('Contact')}>
+          <Text style={styles.actionButtonOutlineIcon}>📣</Text>
+          <Text style={styles.actionButtonOutlineText}>List Your Event</Text>
+        </AnimatedPressable>
+      </FadeSlideIn>
 
-      <View style={styles.calendarCard}>
+      <FadeSlideIn delay={170} style={styles.calendarCard}>
         <Calendar
           current={today.toISOString().split('T')[0]}
           onMonthChange={(m) => loadMonth(m.year, m.month)}
@@ -113,7 +119,7 @@ export default function CalendarScreen({ navigation }) {
           }}
         />
         {monthLoading && <ActivityIndicator style={{ marginTop: 8 }} color={COLORS.accent} />}
-      </View>
+      </FadeSlideIn>
 
       <View style={styles.legendRow}>
         <View style={styles.legendDot} />
@@ -122,46 +128,52 @@ export default function CalendarScreen({ navigation }) {
 
       {selectedDate && (
         <View style={styles.dayResults}>
-          <Text style={styles.dayHeading}>{formatDateHeading(selectedDate)}</Text>
+          <FadeSlideIn key={`heading-${selectedDate}`}>
+            <Text style={styles.dayHeading}>{formatDateHeading(selectedDate)}</Text>
+          </FadeSlideIn>
 
           {dayLoading && <ActivityIndicator style={{ marginTop: 16 }} color={COLORS.accent} />}
 
           {!dayLoading && dayEvents.length === 0 && (
-            <Text style={styles.emptyText}>No events on this day yet.</Text>
+            <FadeSlideIn>
+              <Text style={styles.emptyText}>No events on this day yet.</Text>
+            </FadeSlideIn>
           )}
 
           {!dayLoading &&
-            dayEvents.map((ev) => (
-              <View key={ev.id} style={styles.ticketCard}>
-                <View style={styles.notchLeft} />
-                <View style={styles.notchRight} />
-
-                <Text style={styles.ticketTitle}>{ev.title}</Text>
-                {!!ev.organizer_name && (
-                  <Text style={styles.ticketMeta}>
-                    <Text style={styles.ticketMetaLabel}>Organizer: </Text>{ev.organizer_name}
-                  </Text>
-                )}
-
-                <View style={styles.ticketDivider} />
-
-                <TouchableOpacity
-                  style={styles.detailsButton}
+            dayEvents.map((ev, index) => (
+              <FadeSlideIn key={ev.id} delay={index * 70}>
+                <AnimatedPressable
+                  style={styles.ticketCard}
                   onPress={() => navigation.navigate('EventDetail', { id: ev.id })}
-                  activeOpacity={0.7}
+                  scaleTo={0.985}
                 >
+                  <View style={styles.notchLeft} />
+                  <View style={styles.notchRight} />
+
+                  <Text style={styles.ticketTitle}>{ev.title}</Text>
+                  {!!ev.organizer_name && (
+                    <Text style={styles.ticketMeta}>
+                      <Text style={styles.ticketMetaLabel}>Organizer: </Text>{ev.organizer_name}
+                    </Text>
+                  )}
+
+                  <View style={styles.ticketDivider} />
+
                   <Text style={styles.detailsButtonText}>View more details  →</Text>
-                </TouchableOpacity>
-              </View>
+                </AnimatedPressable>
+              </FadeSlideIn>
             ))}
         </View>
       )}
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.bg },
+  screen: { flex: 1, backgroundColor: COLORS.bg },
+  container: { flex: 1, backgroundColor: 'transparent' },
   scrollContent: { paddingTop: 60, paddingHorizontal: SPACING.md, paddingBottom: 48 },
 
   headerBlock: { marginBottom: SPACING.lg },
@@ -178,22 +190,33 @@ const styles = StyleSheet.create({
   actionRow: { flexDirection: 'row', gap: 10, marginBottom: SPACING.lg },
   actionButton: {
     flex: 1,
+    flexDirection: 'row',
     backgroundColor: COLORS.accent,
-    borderRadius: RADIUS.md,
-    paddingVertical: 13,
+    borderRadius: 999,
+    paddingVertical: 14,
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 7,
+    shadowColor: COLORS.accent,
+    shadowOpacity: 0.28,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 3,
   },
+  actionButtonIcon: { fontSize: 15 },
   actionButtonText: { color: '#fff', fontWeight: '700', fontSize: 14 },
   actionButtonOutline: {
     flex: 1,
-    backgroundColor: COLORS.surface,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: RADIUS.md,
-    paddingVertical: 13,
+    flexDirection: 'row',
+    backgroundColor: COLORS.accentSoft,
+    borderRadius: 999,
+    paddingVertical: 14,
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 7,
   },
-  actionButtonOutlineText: { color: COLORS.ink, fontWeight: '700', fontSize: 14 },
+  actionButtonOutlineIcon: { fontSize: 15 },
+  actionButtonOutlineText: { color: COLORS.accent, fontWeight: '700', fontSize: 14 },
 
   calendarCard: {
     backgroundColor: COLORS.surface,
@@ -251,7 +274,6 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
   },
   ticketTitle: { fontSize: 16, fontWeight: '700', color: COLORS.ink, marginBottom: 8 },
-  ticketMetaRow: { flexDirection: 'column', gap: 4 },
   ticketMeta: { fontSize: 13, color: COLORS.muted },
   ticketMetaLabel: { fontWeight: '700', color: COLORS.ink },
   ticketDivider: {
@@ -260,6 +282,5 @@ const styles = StyleSheet.create({
     borderTopColor: COLORS.border,
     marginVertical: 12,
   },
-  detailsButton: { alignSelf: 'flex-start' },
-  detailsButtonText: { color: COLORS.accent, fontWeight: '700', fontSize: 13 },
+  detailsButtonText: { color: COLORS.accent, fontWeight: '700', fontSize: 13, alignSelf: 'flex-start' },
 });

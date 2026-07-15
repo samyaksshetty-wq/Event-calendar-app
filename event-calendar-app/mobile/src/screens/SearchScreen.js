@@ -1,15 +1,10 @@
 import React, { useState, useCallback } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  FlatList,
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
-} from 'react-native';
+import { View, Text, TextInput, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
 import { searchEvents } from '../api/api';
 import { COLORS, RADIUS, SPACING } from '../theme';
+import FadeSlideIn from '../components/FadeSlideIn';
+import AnimatedPressable from '../components/AnimatedPressable';
+import BackgroundDecoration from '../components/BackgroundDecoration';
 
 export default function SearchScreen({ navigation }) {
   const [query, setQuery] = useState('');
@@ -34,36 +29,43 @@ export default function SearchScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <TextInput
-        style={styles.input}
-        placeholder="Search events by name, venue..."
-        placeholderTextColor="#9ca3af"
-        value={query}
-        onChangeText={runSearch}
-        autoFocus
-        returnKeyType="search"
-      />
+      <BackgroundDecoration />
+      <FadeSlideIn>
+        <TextInput
+          style={styles.input}
+          placeholder="Search events by name, venue..."
+          placeholderTextColor="#9ca3af"
+          value={query}
+          onChangeText={runSearch}
+          autoFocus
+          returnKeyType="search"
+        />
+      </FadeSlideIn>
 
       {loading && <ActivityIndicator style={{ marginTop: 20 }} color={COLORS.accent} />}
 
       {!loading && searched && results.length === 0 && (
-        <Text style={styles.emptyText}>No events match "{query}".</Text>
+        <FadeSlideIn>
+          <Text style={styles.emptyText}>No events match "{query}".</Text>
+        </FadeSlideIn>
       )}
 
       <FlatList
         data={results}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.card}
-            onPress={() => navigation.navigate('EventDetail', { id: item.id })}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.title}>{item.title}</Text>
-            <Text style={styles.meta}>📅 {item.date}{item.time ? `  •  🕒 ${item.time}` : ''}</Text>
-            {!!item.venue && <Text style={styles.meta}>📍 {item.venue}</Text>}
-          </TouchableOpacity>
+        renderItem={({ item, index }) => (
+          <FadeSlideIn delay={index * 60}>
+            <AnimatedPressable
+              style={styles.card}
+              onPress={() => navigation.navigate('EventDetail', { id: item.id })}
+              scaleTo={0.985}
+            >
+              <Text style={styles.title}>{item.title}</Text>
+              <Text style={styles.meta}>📅 {item.date}{item.time ? `  •  🕒 ${item.time}` : ''}</Text>
+              {!!item.venue && <Text style={styles.meta}>📍 {item.venue}</Text>}
+            </AnimatedPressable>
+          </FadeSlideIn>
         )}
       />
     </View>

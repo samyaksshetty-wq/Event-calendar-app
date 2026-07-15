@@ -9,7 +9,7 @@ import axios from 'axios';
 //
 // - Backend deployed online (Render, Railway, etc):
 //     use that public URL, e.g. "https://your-app.onrender.com"
-export const API_BASE_URL = 'http://192.168.1.224:4000';
+export const API_BASE_URL = 'https://event-calendar-app-597h.onrender.com';
 
 const api = axios.create({ baseURL: API_BASE_URL });
 
@@ -33,8 +33,23 @@ export function searchEvents(query) {
   return api.get('/api/events/search', { params: { q: query } }).then((r) => r.data);
 }
 
+// Returns the currently active ad for a placement, or null if none is scheduled.
+// Fails silently (returns null) so an ad-fetch problem never breaks the app.
+export function getActiveAd(placement) {
+  return api
+    .get(`/api/ads/${placement}`)
+    .then((r) => r.data)
+    .catch(() => null);
+}
+
 export function brochureFullUrl(brochure_url) {
   if (!brochure_url) return null;
+  // Brochure URLs now come straight from Supabase Storage and are already
+  // complete (https://...), so they shouldn't be combined with API_BASE_URL.
+  // This check only exists to stay compatible with any old local paths.
+  if (brochure_url.startsWith('http://') || brochure_url.startsWith('https://')) {
+    return brochure_url;
+  }
   return `${API_BASE_URL}${brochure_url}`;
 }
 

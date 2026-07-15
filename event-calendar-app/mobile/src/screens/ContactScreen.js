@@ -1,38 +1,54 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Linking, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Linking, ScrollView } from 'react-native';
 import { COLORS, RADIUS, SPACING } from '../theme';
+import FadeSlideIn from '../components/FadeSlideIn';
+import AnimatedPressable from '../components/AnimatedPressable';
+import BackgroundDecoration from '../components/BackgroundDecoration';
+import AdBanner from '../components/AdBanner';
 
-// TODO: replace these with your real details before publishing the app.
-const CONTACT_EMAIL = 'yourname@example.com';
+// TODO: replace this with your real number before publishing the app.
 const CONTACT_PHONE = '+91 00000 00000';
 
 export default function ContactScreen() {
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ padding: SPACING.md, paddingBottom: 48 }}>
-      <Text style={styles.heading}>List Your Event</Text>
-      <Text style={styles.body}>
-        Are you organizing an event and want it featured on the calendar? Reach out with
-        your event details — title, date, time, venue, a short description, and a
-        brochure (image or PDF) — and it'll be added for everyone to see.
-      </Text>
+    <View style={styles.screen}>
+      <BackgroundDecoration />
+      <ScrollView style={styles.container} contentContainerStyle={{ padding: SPACING.md, paddingBottom: 48 }}>
+      <FadeSlideIn>
+        <Text style={styles.heading}>List Your Event</Text>
+        <Text style={styles.body}>
+          Are you organizing an event and want it featured on the calendar? Reach out with
+          your event details — title, date, time, venue, a short description, and a
+          brochure (image or PDF) — and it'll be added for everyone to see.
+        </Text>
+      </FadeSlideIn>
 
-      <TouchableOpacity style={styles.contactRow} onPress={() => Linking.openURL(`mailto:${CONTACT_EMAIL}`)} activeOpacity={0.7}>
-        <Text style={styles.contactLabel}>Email</Text>
-        <Text style={styles.contactValue}>{CONTACT_EMAIL}</Text>
-      </TouchableOpacity>
+      <FadeSlideIn delay={90}>
+        <AnimatedPressable
+          style={styles.contactRow}
+          onPress={() => Linking.openURL(`tel:${CONTACT_PHONE.replace(/\s/g, '')}`)}
+          scaleTo={0.98}
+        >
+          <Text style={styles.contactLabel}>Phone</Text>
+          <Text style={styles.contactValue}>{CONTACT_PHONE}</Text>
+        </AnimatedPressable>
+      </FadeSlideIn>
 
-      <TouchableOpacity style={styles.contactRow} onPress={() => Linking.openURL(`tel:${CONTACT_PHONE.replace(/\s/g, '')}`)} activeOpacity={0.7}>
-        <Text style={styles.contactLabel}>Phone</Text>
-        <Text style={styles.contactValue}>{CONTACT_PHONE}</Text>
-      </TouchableOpacity>
+      <FadeSlideIn delay={160}>
+        <Text style={styles.footnote}>We usually add new events within a day of receiving your details.</Text>
+      </FadeSlideIn>
 
-      <Text style={styles.footnote}>We usually add new events within a day of receiving your details.</Text>
-    </ScrollView>
+      <FadeSlideIn delay={220} style={{ marginTop: SPACING.lg }}>
+        <AdBanner placement="contact_banner" />
+      </FadeSlideIn>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.bg },
+  screen: { flex: 1, backgroundColor: COLORS.bg },
+  container: { flex: 1, backgroundColor: 'transparent' },
   heading: { fontSize: 22, fontWeight: '800', color: COLORS.ink, letterSpacing: -0.5, marginBottom: 12 },
   body: { fontSize: 15, color: '#374151', lineHeight: 22, marginBottom: SPACING.lg },
   contactRow: {

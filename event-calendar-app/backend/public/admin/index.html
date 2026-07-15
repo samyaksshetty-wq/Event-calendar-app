@@ -88,6 +88,51 @@
           <tbody id="events-tbody"></tbody>
         </table>
       </section>
+
+      <section class="card">
+        <h2>Add New Ad</h2>
+        <form id="ad-form">
+          <label>Placement *</label>
+          <select id="ad-placement" required>
+            <option value="calendar_banner">Calendar Screen — Bottom Banner</option>
+            <option value="event_detail_banner">Event Details Page — Banner</option>
+            <option value="contact_banner">List Your Event Page — Banner</option>
+            <option value="event_detail_interstitial">Event Details Page — Full-Page Ad (shown on open)</option>
+          </select>
+
+          <label>Ad Media (image or video) *</label>
+          <input type="file" id="ad-media" accept=".jpg,.jpeg,.png,.webp,.mp4,.mov,.webm" required />
+          <p class="hint">Banners work best as images. The full-page ad can be an image or a short video.</p>
+
+          <label>Start Date *</label>
+          <input type="date" id="ad-start-date" required />
+
+          <label>End Date *</label>
+          <input type="date" id="ad-end-date" required />
+
+          <div class="form-actions">
+            <button type="submit">Save Ad</button>
+          </div>
+          <p id="ad-form-error" class="error"></p>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>All Ads</h2>
+        <table id="ads-table">
+          <thead>
+            <tr>
+              <th>Placement</th>
+              <th>Type</th>
+              <th>Media</th>
+              <th>Start</th>
+              <th>End</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="ads-tbody"></tbody>
+        </table>
+      </section>
     </main>
   </div>
 

@@ -16,6 +16,7 @@ function showDashboard() {
   loginView.classList.add('hidden');
   dashboardView.classList.remove('hidden');
   loadEvents();
+  loadAds();
 }
 
 function showLogin() {
@@ -166,4 +167,80 @@ async function deleteEvent(id) {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (res.ok) loadEvents();
+}
+
+// ---- ADS ----
+const adForm = document.getElementById('ad-form');
+const adFormError = document.getElementById('ad-form-error');
+const adsTbody = document.getElementById('ads-tbody');
+
+const PLACEMENT_LABELS = {
+  calendar_banner: 'Calendar — Bottom Banner',
+  event_detail_banner: 'Event Details — Banner',
+  contact_banner: 'List Your Event — Banner',
+  event_detail_interstitial: 'Event Details — Full-Page Ad',
+};
+
+async function loadAds() {
+  const res = await fetch(`${API}/api/admin/ads`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (res.status === 401) return showLogin();
+
+  const ads = await res.json();
+  adsTbody.innerHTML = '';
+
+  ads.forEach((ad) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${escapeHtml(PLACEMENT_LABELS[ad.placement] || ad.placement)}</td>
+      <td>${escapeHtml(ad.media_type)}</td>
+      <td><a href="${ad.media_url}" target="_blank">View</a></td>
+      <td>${ad.start_date}</td>
+      <td>${ad.end_date}</td>
+      <td class="actions"><button data-delete-ad="${ad.id}" class="danger">Delete</button></td>
+    `;
+    adsTbody.appendChild(tr);
+  });
+
+  adsTbody.querySelectorAll('[data-delete-ad]').forEach((btn) =>
+    btn.addEventListener('click', () => deleteAd(btn.dataset.deleteAd))
+  );
+}
+
+adForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  adFormError.textContent = '';
+
+  const formData = new FormData();
+  formData.append('placement', document.getElementById('ad-placement').value);
+  formData.append('start_date', document.getElementById('ad-start-date').value);
+  formData.append('end_date', document.getElementById('ad-end-date').value);
+
+  const fileInput = document.getElementById('ad-media');
+  if (fileInput.files[0]) formData.append('media', fileInput.files[0]);
+
+  try {
+    const res = await fetch(`${API}/api/admin/ads`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Something went wrong');
+
+    adForm.reset();
+    loadAds();
+  } catch (err) {
+    adFormError.textContent = err.message;
+  }
+});
+
+async function deleteAd(id) {
+  if (!confirm('Delete this ad? This cannot be undone.')) return;
+  const res = await fetch(`${API}/api/admin/ads/${id}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (res.ok) loadAds();
 }

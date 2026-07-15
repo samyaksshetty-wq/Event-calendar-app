@@ -32,6 +32,18 @@ async function initDb() {
       password_hash TEXT NOT NULL
     );
   `);
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS ads (
+      id TEXT PRIMARY KEY,
+      placement TEXT NOT NULL,     -- calendar_banner | event_detail_banner | contact_banner | event_detail_interstitial
+      media_type TEXT NOT NULL,    -- 'image' or 'video'
+      media_url TEXT NOT NULL,
+      start_date TEXT NOT NULL,    -- YYYY-MM-DD, inclusive
+      end_date TEXT NOT NULL,      -- YYYY-MM-DD, inclusive
+      created_at TIMESTAMPTZ DEFAULT now()
+    );
+  `);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_ads_placement ON ads(placement);`);
 }
 
 module.exports = { pool, initDb };
