@@ -12,6 +12,7 @@ import { COLORS, RADIUS, SPACING } from '../theme';
 import FadeSlideIn from '../components/FadeSlideIn';
 import AnimatedPressable from '../components/AnimatedPressable';
 import BackgroundDecoration from '../components/BackgroundDecoration';
+import AdBanner from '../components/AdBanner';
 
 function formatDateHeading(dateString) {
   const d = new Date(dateString + 'T00:00:00');
@@ -72,10 +73,15 @@ export default function CalendarScreen({ navigation }) {
       <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
         <FadeSlideIn style={styles.headerBlock}>
           <Text style={styles.eyebrow}>WHAT'S ON</Text>
-          <Text style={styles.header}>Namma Events</Text>
+          <Text style={styles.header}>
+            <Text style={{ color: COLORS.brandYellow || '#F5C518' }}>Namma</Text>
+            <Text style={{ color: COLORS.brandRed }}> Events</Text>
+          </Text>
           <Text style={styles.description}>
-            Search your favourite events and discover what's happening near you — from concerts
-            and workshops to community meetups, browse the calendar and never miss what matters to you.
+            Explore cultural programmes, sports events, workshops, and community meetups — 
+            all organized by and for the Kannadiga community. Simply tap on any date in 
+            the calendar below to discover what events are happening that day, and never 
+            miss out on what matters to you!
           </Text>
         </FadeSlideIn>
 
@@ -167,6 +173,7 @@ export default function CalendarScreen({ navigation }) {
         </View>
       )}
       </ScrollView>
+      <AdBanner placement="calendar_banner" />
     </View>
   );
 }
@@ -184,7 +191,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
     marginBottom: 6,
   },
-  header: { fontSize: 28, fontWeight: '800', color: COLORS.ink, letterSpacing: -0.5 },
+  header: { fontSize: 28, fontWeight: '800', color: COLORS.brandRed, letterSpacing: -0.5 },
   description: { fontSize: 14, color: COLORS.muted, marginTop: 8, lineHeight: 20 },
 
   actionRow: { flexDirection: 'row', gap: 10, marginBottom: SPACING.lg },

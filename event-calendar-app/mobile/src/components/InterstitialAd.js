@@ -1,26 +1,39 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, Modal, StyleSheet, Pressable, Image } from 'react-native';
+import { View, Text, Modal, StyleSheet, Pressable } from 'react-native';
+import { Image } from 'expo-image';
 import { Video, ResizeMode } from 'expo-av';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getActiveAd } from '../api/api';
 
 const COUNTDOWN_SECONDS = 10;
 
-// Shows a full-screen ad (image or video) the moment it mounts, if one is
-// scheduled for the given placement. The close button only appears after a
-// 10-second countdown - shown as a small badge in the top-right corner.
-export default function InterstitialAd({ placement }) {
+// Checks for a scheduled ad and, if one exists, blocks the screen behind it
+// with a full-screen Modal until the countdown-gated close button is tapped.
+// Calls onDone() exactly once - either immediately if there's no ad to show,
+// or after the user closes the ad - which is the parent's signal that it's
+// now safe to reveal the actual screen content.
+export default function InterstitialAd({ placement, onDone }) {
   const [ad, setAd] = useState(null);
   const [visible, setVisible] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(COUNTDOWN_SECONDS);
   const timerRef = useRef(null);
+  const doneRef = useRef(false);
+
+  const fireDone = () => {
+    if (doneRef.current) return;
+    doneRef.current = true;
+    onDone && onDone();
+  };
 
   useEffect(() => {
     let cancelled = false;
     getActiveAd(placement).then((result) => {
-      if (!cancelled && result) {
+      if (cancelled) return;
+      if (result) {
         setAd(result);
         setVisible(true);
+      } else {
+        fireDone();
       }
     });
     return () => {
@@ -48,15 +61,20 @@ export default function InterstitialAd({ placement }) {
   if (!ad) return null;
 
   const canClose = secondsLeft <= 0;
+  const close = () => {
+    setVisible(false);
+    fireDone();
+  };
 
   return (
     <Modal
       visible={visible}
       animationType="fade"
       presentationStyle="fullScreen"
+      statusBarTranslucent
       onRequestClose={() => {
         // Only the countdown-gated button can close this, not the hardware back button.
-        if (canClose) setVisible(false);
+        if (canClose) close();
       }}
     >
       <View style={styles.container}>
@@ -69,12 +87,17 @@ export default function InterstitialAd({ placement }) {
             isLooping
           />
         ) : (
-          <Image source={{ uri: ad.media_url }} style={styles.media} resizeMode="contain" />
+          <Image
+            source={{ uri: ad.media_url }}
+            style={styles.media}
+            contentFit="contain"
+            cachePolicy="disk"
+          />
         )}
 
         <SafeAreaView style={styles.topBar} edges={['top']}>
           {canClose ? (
-            <Pressable onPress={() => setVisible(false)} style={styles.closeButton}>
+            <Pressable onPress={close} style={styles.closeButton}>
               <Text style={styles.closeText}>Close ✕</Text>
             </Pressable>
           ) : (

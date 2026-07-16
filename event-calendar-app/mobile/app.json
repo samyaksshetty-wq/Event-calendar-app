@@ -1,12 +1,15 @@
 {
   "expo": {
-    "name": "Events Near You",
+    "name": "Namma Events",
     "slug": "event-calendar-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
+    "icon": "./assets/logo.png",
     "splash": {
-      "backgroundColor": "#4f46e5"
+      "image": "./assets/logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FAF9F6"
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
@@ -14,7 +17,11 @@
       "bundleIdentifier": "com.yourname.eventcalendar"
     },
     "android": {
-      "package": "com.yourname.eventcalendar"
+      "package": "com.yourname.eventcalendar",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/logo.png",
+        "backgroundColor": "#FAF9F6"
+      }
     }
   }
 }

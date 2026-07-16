@@ -33,6 +33,11 @@ export function searchEvents(query) {
   return api.get('/api/events/search', { params: { q: query } }).then((r) => r.data);
 }
 
+// Returns the next few upcoming events, used for search-screen suggestions
+export function getUpcomingEvents(limit = 5) {
+  return api.get('/api/events/upcoming', { params: { limit } }).then((r) => r.data);
+}
+
 // Returns the currently active ad for a placement, or null if none is scheduled.
 // Fails silently (returns null) so an ad-fetch problem never breaks the app.
 export function getActiveAd(placement) {

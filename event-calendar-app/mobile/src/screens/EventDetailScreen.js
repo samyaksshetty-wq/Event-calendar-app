@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
-  Image,
   StyleSheet,
   ScrollView,
   ActivityIndicator,
@@ -11,6 +10,7 @@ import {
   Modal,
   Pressable,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 import { getEventById, brochureFullUrl } from '../api/api';
@@ -19,6 +19,18 @@ import FadeSlideIn from '../components/FadeSlideIn';
 import AnimatedPressable from '../components/AnimatedPressable';
 import AdBanner from '../components/AdBanner';
 import InterstitialAd from '../components/InterstitialAd';
+
+function formatDateWithDay(dateString) {
+  if (!dateString) return dateString;
+  const d = new Date(dateString + 'T00:00:00');
+  if (isNaN(d.getTime())) return dateString; // fall back to raw string if unparsable
+  return d.toLocaleDateString(undefined, {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
 
 function Field({ label, value }) {
   if (!value) return null;
@@ -35,6 +47,10 @@ export default function EventDetailScreen({ route }) {
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [brochureVisible, setBrochureVisible] = useState(false);
+  // Starts closed - the screen's real content only renders once the ad has
+  // either been dismissed by the user or determined not to exist. This is
+  // what stops the detail content from flashing on screen before the ad does.
+  const [adGateOpen, setAdGateOpen] = useState(false);
 
   useEffect(() => {
     getEventById(id)
@@ -43,10 +59,13 @@ export default function EventDetailScreen({ route }) {
       .finally(() => setLoading(false));
   }, [id]);
 
-  if (loading) {
+  const ready = adGateOpen && !loading;
+
+  if (!ready) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator color={COLORS.accent} />
+        <InterstitialAd placement="event_detail_interstitial" onDone={() => setAdGateOpen(true)} />
+        {adGateOpen && <ActivityIndicator color={COLORS.accent} />}
       </View>
     );
   }
@@ -73,79 +92,83 @@ export default function EventDetailScreen({ route }) {
     : null;
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ padding: SPACING.md, paddingBottom: 48 }}>
-      <InterstitialAd placement="event_detail_interstitial" />
+    <View style={styles.screen}>
+      <ScrollView style={styles.container} contentContainerStyle={{ padding: SPACING.md, paddingBottom: 24 }}>
+        <FadeSlideIn>
+          {!!event.organizer_name && (
+            <View style={styles.organizerBlock}>
+              <Text style={styles.organizerLabel}>ORGANIZED BY</Text>
+              <Text style={styles.organizerName}>{event.organizer_name}</Text>
+            </View>
+          )}
 
-      <FadeSlideIn>
-        {!!event.organizer_name && (
-          <View style={styles.organizerBlock}>
-            <Text style={styles.organizerLabel}>ORGANIZED BY</Text>
-            <Text style={styles.organizerName}>{event.organizer_name}</Text>
+          <View style={styles.titleBlock}>
+            <Text style={styles.titleLabel}>EVENT TITLE</Text>
+            <Text style={styles.title}>{event.title}</Text>
           </View>
-        )}
 
-        <Text style={styles.title}>{event.title}</Text>
-
-        <View style={styles.metaCard}>
-          <Field label="Date" value={event.date} />
-          <Field label="Timing" value={event.time} />
-          <Field label="Venue" value={event.venue} />
-          <Field label="Entry Fee" value={event.fees} />
-        </View>
-
-        {!!event.description && (
-          <View style={styles.section}>
-            <Text style={styles.sectionLabel}>Description:</Text>
-            <Text style={styles.description}>{event.description}</Text>
+          <View style={styles.metaCard}>
+            <Field label="Date" value={formatDateWithDay(event.date)} />
+            <Field label="Timing" value={event.time} />
+            <Field label="Venue" value={event.venue} />
+            <Field label="Entry Fee" value={event.fees} />
           </View>
-        )}
 
-        {!!event.organizer_contact && (
-          <View style={styles.section}>
-            <Text style={styles.sectionLabel}>Contact:</Text>
-            <Text style={styles.description}>{event.organizer_contact}</Text>
-          </View>
-        )}
+          {!!event.description && (
+            <View style={styles.section}>
+              <Text style={styles.sectionLabel}>Description:</Text>
+              <Text style={styles.description}>{event.description}</Text>
+            </View>
+          )}
 
-        {(isImage || isPdf) && (
-          <View style={styles.section}>
-            <AnimatedPressable
-              style={styles.brochureButton}
-              onPress={() => setBrochureVisible(true)}
-              scaleTo={0.97}
-            >
-              <Text style={styles.brochureButtonIcon}>📄</Text>
-              <Text style={styles.brochureButtonText}>View Brochure</Text>
-            </AnimatedPressable>
-          </View>
-        )}
+          {!!event.organizer_contact && (
+            <View style={styles.section}>
+              <Text style={styles.sectionLabel}>Contact:</Text>
+              <Text style={styles.description}>{event.organizer_contact}</Text>
+            </View>
+          )}
 
-        {!!event.location && (
-          <View style={styles.section}>
-            <Text style={styles.sectionLabel}>Location:</Text>
-            <AnimatedPressable
-              style={styles.mapCard}
-              onPress={() => Linking.openURL(event.location)}
-              scaleTo={0.98}
-            >
-              <Text style={styles.mapPin}>📍</Text>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.mapCardTitle}>View location on Google Maps</Text>
-                <Text style={styles.mapCardSubtitle}>Tap to open in Maps</Text>
-              </View>
-              <Text style={styles.mapArrow}>→</Text>
-            </AnimatedPressable>
-          </View>
-        )}
+          {(isImage || isPdf) && (
+            <View style={styles.section}>
+              <AnimatedPressable
+                style={styles.brochureButton}
+                onPress={() => setBrochureVisible(true)}
+                scaleTo={0.97}
+              >
+                <Text style={styles.brochureButtonIcon}>📄</Text>
+                <Text style={styles.brochureButtonText}>View Brochure</Text>
+              </AnimatedPressable>
+            </View>
+          )}
 
-        <AdBanner placement="event_detail_banner" />
-      </FadeSlideIn>
+          {!!event.location && (
+            <View style={styles.section}>
+              <Text style={styles.sectionLabel}>Location:</Text>
+              <AnimatedPressable
+                style={styles.mapCard}
+                onPress={() => Linking.openURL(event.location)}
+                scaleTo={0.98}
+              >
+                <Text style={styles.mapPin}>📍</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.mapCardTitle}>View location on Google Maps</Text>
+                  <Text style={styles.mapCardSubtitle}>Tap to open in Maps</Text>
+                </View>
+                <Text style={styles.mapArrow}>→</Text>
+              </AnimatedPressable>
+            </View>
+          )}
+        </FadeSlideIn>
+      </ScrollView>
+
+      <AdBanner placement="event_detail_banner" />
 
       {/* Full-screen in-app brochure viewer - no external app/browser involved */}
       <Modal
         visible={brochureVisible}
         animationType="slide"
         presentationStyle="fullScreen"
+        statusBarTranslucent
         onRequestClose={() => setBrochureVisible(false)}
       >
         <SafeAreaView style={styles.modalContainer} edges={['top', 'bottom']}>
@@ -157,7 +180,12 @@ export default function EventDetailScreen({ route }) {
           </View>
 
           {isImage && (
-            <Image source={{ uri: brochureUrl }} style={styles.modalImage} resizeMode="contain" />
+            <Image
+              source={{ uri: brochureUrl }}
+              style={styles.modalImage}
+              contentFit="contain"
+              cachePolicy="disk"
+            />
           )}
 
           {isPdf && (
@@ -165,11 +193,12 @@ export default function EventDetailScreen({ route }) {
           )}
         </SafeAreaView>
       </Modal>
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: COLORS.bg },
   container: { flex: 1, backgroundColor: COLORS.bg },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.bg },
 
@@ -183,7 +212,15 @@ const styles = StyleSheet.create({
   },
   organizerName: { fontSize: 22, fontWeight: '800', color: COLORS.ink, letterSpacing: -0.3 },
 
-  title: { fontSize: 18, fontWeight: '600', color: '#374151', marginBottom: 16 },
+  titleBlock: { marginBottom: 16 },
+  titleLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: COLORS.accent,
+    letterSpacing: 1.2,
+    marginBottom: 4,
+  },
+  title: { fontSize: 18, fontWeight: '600', color: '#374151' },
 
   metaCard: {
     backgroundColor: COLORS.surface,

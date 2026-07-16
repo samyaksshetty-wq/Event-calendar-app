@@ -8,6 +8,8 @@ export const COLORS = {
   accent: '#0F6D66',    // deep teal - primary actions, links
   accentSoft: '#E7F3F1',// light teal fill (badges, selected states)
   gold: '#D9A441',      // small highlight accent (today marker, dots)
+  brand: '#2F6B3A',      // tree green from the Namma Events logo
+  brandRed: '#C8102E',   // flag red from the Namma Events logo
   danger: '#DC2626',
 };
 

@@ -1,5 +1,52 @@
 const API = ''; // same origin as the admin panel
 
+// Resizes/compresses an image file in the browser before upload, so a 5-10MB
+// phone photo doesn't become a 5-10MB download for every person using the app.
+// PDFs and videos are passed through untouched - only real images get resized.
+function compressImageIfNeeded(file, maxDimension = 1600, quality = 0.82) {
+  return new Promise((resolve) => {
+    if (!file.type.startsWith('image/') || file.type === 'image/gif') {
+      resolve(file); // leave PDFs, videos, and gifs alone
+      return;
+    }
+
+    const img = new Image();
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      img.onload = () => {
+        let { width, height } = img;
+        if (width <= maxDimension && height <= maxDimension) {
+          resolve(file); // already small enough, don't bother re-encoding
+          return;
+        }
+
+        const scale = maxDimension / Math.max(width, height);
+        width = Math.round(width * scale);
+        height = Math.round(height * scale);
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) return resolve(file);
+            resolve(new File([blob], file.name.replace(/\.\w+$/, '.jpg'), { type: 'image/jpeg' }));
+          },
+          'image/jpeg',
+          quality
+        );
+      };
+      img.onerror = () => resolve(file);
+      img.src = e.target.result;
+    };
+    reader.onerror = () => resolve(file);
+    reader.readAsDataURL(file);
+  });
+}
+
 let token = localStorage.getItem('admin_token') || null;
 
 const loginView = document.getElementById('login-view');
@@ -142,7 +189,10 @@ eventForm.addEventListener('submit', async (e) => {
   formData.append('organizer_contact', document.getElementById('organizer_contact').value);
 
   const fileInput = document.getElementById('brochure');
-  if (fileInput.files[0]) formData.append('brochure', fileInput.files[0]);
+  if (fileInput.files[0]) {
+    const compressed = await compressImageIfNeeded(fileInput.files[0]);
+    formData.append('brochure', compressed);
+  }
 
   try {
     const res = await fetch(`${API}/api/admin/events${id ? '/' + id : ''}`, {
@@ -218,7 +268,10 @@ adForm.addEventListener('submit', async (e) => {
   formData.append('end_date', document.getElementById('ad-end-date').value);
 
   const fileInput = document.getElementById('ad-media');
-  if (fileInput.files[0]) formData.append('media', fileInput.files[0]);
+  if (fileInput.files[0]) {
+    const compressed = await compressImageIfNeeded(fileInput.files[0]);
+    formData.append('media', compressed);
+  }
 
   try {
     const res = await fetch(`${API}/api/admin/ads`, {

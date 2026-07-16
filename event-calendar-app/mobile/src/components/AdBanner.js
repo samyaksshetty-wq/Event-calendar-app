@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { View, Image, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import { Image } from 'expo-image';
 import { Video, ResizeMode } from 'expo-av';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { getActiveAd } from '../api/api';
-import { COLORS, RADIUS } from '../theme';
+import { COLORS } from '../theme';
 
-// Renders the currently scheduled ad for a given placement (calendar_banner,
-// event_detail_banner, contact_banner). Renders nothing if no ad is active
-// for today, so it never leaves an empty gap.
-export default function AdBanner({ placement, style }) {
+// A docked bottom banner. Place this as a SIBLING after your ScrollView
+// (not inside it) so it stays fixed at the bottom of the screen regardless
+// of scroll position. Renders nothing if no ad is scheduled for today.
+export default function AdBanner({ placement }) {
   const [ad, setAd] = useState(null);
 
   useEffect(() => {
@@ -23,32 +25,43 @@ export default function AdBanner({ placement, style }) {
   if (!ad) return null;
 
   return (
-    <View style={[styles.container, style]}>
-      {ad.media_type === 'video' ? (
-        <Video
-          source={{ uri: ad.media_url }}
-          style={styles.media}
-          resizeMode={ResizeMode.COVER}
-          isLooping
-          isMuted
-          shouldPlay
-        />
-      ) : (
-        <Image source={{ uri: ad.media_url }} style={styles.media} resizeMode="cover" />
-      )}
-    </View>
+    <SafeAreaView edges={['bottom']} style={styles.wrapper}>
+      <View style={styles.container}>
+        {ad.media_type === 'video' ? (
+          <Video
+            source={{ uri: ad.media_url }}
+            style={styles.media}
+            resizeMode={ResizeMode.COVER}
+            isLooping
+            isMuted
+            shouldPlay
+          />
+        ) : (
+          <Image
+            source={{ uri: ad.media_url }}
+            style={styles.media}
+            contentFit="cover"
+            cachePolicy="disk"
+          />
+        )}
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  wrapper: { backgroundColor: COLORS.surface },
   container: {
     width: '100%',
-    height: 110,
-    borderRadius: RADIUS.lg,
-    overflow: 'hidden',
+    height: 90,
     backgroundColor: COLORS.surface,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: -3 },
+    elevation: 6,
   },
   media: { width: '100%', height: '100%' },
 });
