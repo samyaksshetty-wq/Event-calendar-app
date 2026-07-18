@@ -1,12 +1,9 @@
 name: Send daily event notifications
 
-# Runs once a day and asks the backend "are there events today?" - if so, the
-# backend pushes a notification to every device that's registered for them.
-
 on:
   schedule:
-    - cron: '30 3 * * *'   # 3:30 UTC = 9:00 AM IST
-  workflow_dispatch: {}     # lets you also trigger it manually from the Actions tab
+    - cron: '30 3 * * *'
+  workflow_dispatch: {}
 
 jobs:
   notify:
@@ -14,6 +11,10 @@ jobs:
     steps:
       - name: Trigger today's notifications
         run: |
-          curl -sf -X POST "${{ secrets.BACKEND_URL }}/api/push/send-today" \
-            -H "x-notify-secret: ${{ secrets.NOTIFY_SECRET }}" \
-            || exit 1
+          response=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST "${{ secrets.BACKEND_URL }}/api/push/send-today" -H "x-notify-secret: ${{ secrets.NOTIFY_SECRET }}")
+          echo "Response: $response"
+          status=$(echo "$response" | grep "HTTP_STATUS" | cut -d: -f2)
+          if [ "$status" != "200" ]; then
+            echo "Request failed with HTTP status $status"
+            exit 1
+          fi
