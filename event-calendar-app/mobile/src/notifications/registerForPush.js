@@ -1,6 +1,7 @@
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import { registerPushToken } from '../api/api';
+import Constants from 'expo-constants';
 
 // Controls how a notification behaves if it arrives while the app is open
 Notifications.setNotificationHandler({
@@ -33,6 +34,12 @@ export async function registerForPushNotifications() {
   if (finalStatus !== 'granted') return null;
 
   try {
+    const projectId =
+      Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId;
+
+    const tokenData = await Notifications.getExpoPushTokenAsync(
+      projectId ? { projectId } : undefined
+    );
     const tokenData = await Notifications.getExpoPushTokenAsync();
     const token = tokenData.data;
     registerPushToken(token);
