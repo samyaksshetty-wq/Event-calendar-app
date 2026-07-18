@@ -25,11 +25,11 @@ app.use('/privacy', express.static(path.join(__dirname, 'public', 'privacy')));
 app.use('/api/events', eventsRouter);   // public, used by the mobile app
 app.use('/api/admin', adminRouter);     // protected, used by the admin panel
 app.use('/api/ads', adsRouter);         // public, used by the mobile app
-<<<<<<< Updated upstream
+
 app.use('/api/push', pushRouter);
-=======
+
 app.use('/api/push', pushRouter);       // public register + secret-protected send-today
->>>>>>> Stashed changes
+
 
 app.get('/', (req, res) => {
   res.send('Event Calendar API is running. Admin panel is at /admin');
