@@ -3,7 +3,6 @@ import { Platform } from 'react-native';
 import { registerPushToken } from '../api/api';
 import Constants from 'expo-constants';
 
-// Controls how a notification behaves if it arrives while the app is open
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -12,14 +11,11 @@ Notifications.setNotificationHandler({
   }),
 });
 
-// Asks for notification permission (if not already granted or denied) and, if
-// granted, registers this device's push token with the backend. Safe to call
-// on every app launch - it's a no-op if permission was already decided.
 export async function registerForPushNotifications() {
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync('default', {
       name: 'default',
-      importance: Notifications.AndroidImportance.DEFAULT,
+      importance: Notifications.AndroidImportance.MAX, // Recommended for clear visual alerts in UAE
     });
   }
 
@@ -34,18 +30,20 @@ export async function registerForPushNotifications() {
   if (finalStatus !== 'granted') return null;
 
   try {
+    // Correctly extract the projectId required for native builds
     const projectId =
       Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId;
 
-    const tokenData = await Notifications.getExpoPushTokenAsync(
-      projectId ? { projectId } : undefined
-    );
-    const tokenData = await Notifications.getExpoPushTokenAsync();
+    // Call the function exactly ONCE, passing the required projectId object
+    const tokenData = await Notifications.getExpoPushTokenAsync({ projectId });
     const token = tokenData.data;
-    registerPushToken(token);
+    
+    // Await the API call to ensure it finishes sending to Supabase
+    await registerPushToken(token);
+    
     return token;
   } catch (err) {
-    console.log('Failed to get push token', err.message);
+    console.log('Failed to get push token:', err.message);
     return null;
   }
 }
