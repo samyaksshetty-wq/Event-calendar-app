@@ -1,0 +1,19 @@
+name: Send daily event notifications
+
+# Runs once a day and asks the backend "are there events today?" - if so, the
+# backend pushes a notification to every device that's registered for them.
+
+on:
+  schedule:
+    - cron: '30 3 * * *'   # 3:30 UTC = 9:00 AM IST
+  workflow_dispatch: {}     # lets you also trigger it manually from the Actions tab
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger today's notifications
+        run: |
+          curl -sf -X POST "${{ secrets.BACKEND_URL }}/api/push/send-today" \
+            -H "x-notify-secret: ${{ secrets.NOTIFY_SECRET }}" \
+            || exit 1
