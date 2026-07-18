@@ -11,7 +11,7 @@ import axios from 'axios';
 //     use that public URL, e.g. "https://your-app.onrender.com"
 export const API_BASE_URL = 'https://event-calendar-app-597h.onrender.com';
 
-const api = axios.create({ baseURL: API_BASE_URL });
+const api = axios.create({ baseURL: 'https://event-calendar-app-597h.onrender.com' });
 
 // Returns date -> event count for a given month, for calendar dots
 export function getEventDatesForMonth(year, month) {
@@ -40,6 +40,13 @@ export function getUpcomingEvents(limit = 5) {
 
 // Returns the currently active ad for a placement, or null if none is scheduled.
 // Fails silently (returns null) so an ad-fetch problem never breaks the app.
+// Registers this device's push token with the backend so it can receive
+// "events today" notifications. Fails silently - notifications are a nice
+// extra, never something that should block or crash the app.
+export function registerPushToken(token) {
+  return api.post('/api/push/register', { token }).catch(() => {});
+}
+
 export function getActiveAd(placement) {
   return api
     .get(`/api/ads/${placement}`)

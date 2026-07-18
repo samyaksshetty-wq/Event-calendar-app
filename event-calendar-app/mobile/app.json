@@ -11,17 +11,33 @@
       "resizeMode": "contain",
       "backgroundColor": "#FAF9F6"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.yourname.eventcalendar"
+      "bundleIdentifier": "com.samyakshetty.nammaevents"
     },
     "android": {
-      "package": "com.yourname.eventcalendar",
+      "package": "com.samyakshetty.nammaevents",
       "adaptiveIcon": {
         "foregroundImage": "./assets/logo.png",
         "backgroundColor": "#FAF9F6"
       }
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "b8a190af-d22e-441c-9bda-f996f5ecf657"
+      }
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/logo.png",
+          "color": "#C8102E"
+        }
+      ]
+    ]
   }
 }

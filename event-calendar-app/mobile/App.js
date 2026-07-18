@@ -3,6 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { View, Text, StyleSheet, Animated, Image } from 'react-native';
 import AppNavigator from './src/navigation/AppNavigator';
 import { COLORS } from './src/theme';
+import { registerForPushNotifications } from './src/notifications/registerForPush';
 
 const LYRIC_LINE_1 = ['ಜಯ', 'ಭಾರತ', 'ಜನನಿಯ', 'ತನುಜಾತೆ,'];
 const LYRIC_LINE_2 = ['ಜಯ', 'ಹೇ', 'ಕರ್ನಾಟಕ', 'ಮಾತೆ!'];
@@ -41,7 +42,12 @@ export default function App() {
         toValue: 0,
         duration: 400,
         useNativeDriver: true,
-      }).start(() => setShowSplash(false));
+      }).start(() => {
+        setShowSplash(false);
+        // Ask for notification permission right as the real app appears,
+        // rather than immediately on cold open where it'd compete with the splash.
+        registerForPushNotifications();
+      });
     }, 5000);
 
     return () => clearTimeout(timer);
@@ -50,10 +56,9 @@ export default function App() {
   return (
     <>
       <StatusBar style="dark" />
-      <AppNavigator />
 
-      {showSplash && (
-        <Animated.View style={[styles.splash, { opacity: splashOpacity }]} pointerEvents="none">
+      {showSplash ? (
+        <Animated.View style={[styles.splash, { opacity: splashOpacity }]}>
           <Animated.View
             style={{
               opacity: introAnim,
@@ -77,9 +82,9 @@ export default function App() {
                     styles.lyricWord,
                     {
                       opacity: wordAnims[i],
-                      color: '#F5C518',
-                      textShadowColor: '#000',
-                      textShadowOffset: { width: 1, height: 1 },
+                      color: '#F5C518', 
+                      textShadowColor: '#000', 
+                      textShadowOffset: { width: 1, height: 1 }, 
                       textShadowRadius: 3,
                       transform: [
                         { translateY: wordAnims[i].interpolate({ inputRange: [0, 1], outputRange: [6, 0] }) },
@@ -118,6 +123,8 @@ export default function App() {
             </View>
           </View>
         </Animated.View>
+      ) : (
+        <AppNavigator />
       )}
     </>
   );
