@@ -44,6 +44,12 @@ async function initDb() {
     );
   `);
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_ads_placement ON ads(placement);`);
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS push_tokens (
+      token TEXT PRIMARY KEY,
+      created_at TIMESTAMPTZ DEFAULT now()
+    );
+  `);
 }
 
 module.exports = { pool, initDb };
