@@ -60,14 +60,17 @@ router.post('/send-today', async (req, res) => {
   const chunks = [];
   for (let i = 0; i < messages.length; i += 100) chunks.push(messages.slice(i, i + 100));
 
+  const expoResults = [];
   for (const chunk of chunks) {
-    await fetch('https://exp.host/--/api/v2/push/send', {
+    const expoRes = await fetch('https://exp.host/--/api/v2/push/send', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify(chunk),
     });
+    expoResults.push(await expoRes.json());
   }
 
+  res.json({ sent: true, eventCount: events.length, deviceCount: tokens.length, expoResults });
   res.json({ sent: true, eventCount: events.length, deviceCount: tokens.length });
 });
 
