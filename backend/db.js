@@ -25,6 +25,13 @@ async function initDb() {
     );
   `);
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_events_date ON events(date);`);
+
+  // Postgres supports adding a column only if it doesn't already exist,
+  // so this is safe to run every time the server starts, even on an
+  // existing database that predates this feature.
+  await pool.query(`ALTER TABLE events ADD COLUMN IF NOT EXISTS category TEXT;`);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_events_category ON events(category);`);
+
   await pool.query(`
     CREATE TABLE IF NOT EXISTS admins (
       id TEXT PRIMARY KEY,

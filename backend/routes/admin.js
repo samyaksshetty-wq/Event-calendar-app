@@ -106,7 +106,7 @@ router.get('/events', async (req, res) => {
 // CREATE event
 router.post('/events', upload.single('brochure'), async (req, res) => {
   try {
-    const { title, description, date, time, venue, location, fees, organizer_name, organizer_contact } = req.body;
+    const { title, description, date, time, venue, location, fees, category, organizer_name, organizer_contact } = req.body;
     if (!title || !date) {
       return res.status(400).json({ error: 'Title and date are required' });
     }
@@ -115,9 +115,9 @@ router.post('/events', upload.single('brochure'), async (req, res) => {
     const brochure_url = await uploadBrochure(req.file);
 
     const { rows } = await pool.query(
-      `INSERT INTO events (id, title, description, date, time, venue, location, fees, organizer_name, organizer_contact, brochure_url)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *`,
-      [id, title, description || '', date, time || '', venue || '', location || '', fees || '', organizer_name || '', organizer_contact || '', brochure_url]
+      `INSERT INTO events (id, title, description, date, time, venue, location, fees, category, organizer_name, organizer_contact, brochure_url)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING *`,
+      [id, title, description || '', date, time || '', venue || '', location || '', fees || '', category || '', organizer_name || '', organizer_contact || '', brochure_url]
     );
 
     res.status(201).json(rows[0]);
@@ -134,12 +134,12 @@ router.put('/events/:id', upload.single('brochure'), async (req, res) => {
     const existing = existingRows[0];
     if (!existing) return res.status(404).json({ error: 'Event not found' });
 
-    const { title, description, date, time, venue, location, fees, organizer_name, organizer_contact } = req.body;
+    const { title, description, date, time, venue, location, fees, category, organizer_name, organizer_contact } = req.body;
     const brochure_url = req.file ? await uploadBrochure(req.file) : existing.brochure_url;
 
     const { rows } = await pool.query(
       `UPDATE events SET title=$1, description=$2, date=$3, time=$4, venue=$5, location=$6, fees=$7,
-       organizer_name=$8, organizer_contact=$9, brochure_url=$10 WHERE id=$11 RETURNING *`,
+       category=$8, organizer_name=$9, organizer_contact=$10, brochure_url=$11 WHERE id=$12 RETURNING *`,
       [
         title || existing.title,
         description ?? existing.description,
@@ -148,6 +148,7 @@ router.put('/events/:id', upload.single('brochure'), async (req, res) => {
         venue ?? existing.venue,
         location ?? existing.location,
         fees ?? existing.fees,
+        category ?? existing.category,
         organizer_name ?? existing.organizer_name,
         organizer_contact ?? existing.organizer_contact,
         brochure_url,

@@ -21,17 +21,52 @@ router.get('/dates', async (req, res) => {
   res.json(result);
 });
 
-// GET /api/events/search?q=music
+// GET /api/events/search?q=music&category=Music
+// Either q, category, or both can be provided.
 router.get('/search', async (req, res) => {
   const q = (req.query.q || '').trim();
-  if (!q) return res.json([]);
+  const category = (req.query.category || '').trim();
+  if (!q && !category) return res.json([]);
 
-  const like = `%${q}%`;
+  const conditions = [];
+  const params = [];
+
+  if (q) {
+    params.push(`%${q}%`);
+    conditions.push(
+      `(title ILIKE $${params.length} OR description ILIKE $${params.length} OR venue ILIKE $${params.length} OR location ILIKE $${params.length})`
+    );
+  }
+  if (category) {
+    params.push(category);
+    conditions.push(`category = $${params.length}`);
+  }
+
   const { rows } = await pool.query(
-    `SELECT * FROM events
-     WHERE title ILIKE $1 OR description ILIKE $1 OR venue ILIKE $1 OR location ILIKE $1
-     ORDER BY date ASC`,
-    [like]
+    `SELECT * FROM events WHERE ${conditions.join(' AND ')} ORDER BY date ASC`,
+    params
+  );
+  res.json(rows);
+});
+
+// GET /api/events/categories
+// Distinct categories actually in use, for building filter chips dynamically.
+router.get('/categories', async (req, res) => {
+  const { rows } = await pool.query(
+    `SELECT DISTINCT category FROM events WHERE category IS NOT NULL AND category <> '' ORDER BY category ASC`
+  );
+  res.json(rows.map((r) => r.category));
+});
+
+// GET /api/events/upcoming?limit=5
+// Used for "recommended" suggestions - the next N events from today onward.
+router.get('/upcoming', async (req, res) => {
+  const limit = Math.min(parseInt(req.query.limit, 10) || 5, 20);
+  const today = new Date().toISOString().split('T')[0];
+
+  const { rows } = await pool.query(
+    `SELECT * FROM events WHERE date >= $1 ORDER BY date ASC, time ASC LIMIT $2`,
+    [today, limit]
   );
   res.json(rows);
 });

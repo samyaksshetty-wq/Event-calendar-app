@@ -120,6 +120,7 @@ async function loadEvents() {
       <td>${escapeHtml(ev.title)}</td>
       <td>${escapeHtml(ev.venue || '')}</td>
       <td>${ev.fees ? escapeHtml(ev.fees) : '—'}</td>
+      <td>${ev.category ? escapeHtml(ev.category) : '—'}</td>
       <td>${ev.brochure_url ? `<a href="${ev.brochure_url}" target="_blank">View</a>` : '—'}</td>
       <td class="actions">
         <button data-edit="${ev.id}">Edit</button>
@@ -153,6 +154,7 @@ function startEdit(ev) {
   document.getElementById('venue').value = ev.venue || '';
   document.getElementById('location').value = ev.location || '';
   document.getElementById('fees').value = ev.fees || '';
+  document.getElementById('category').value = ev.category || '';
   document.getElementById('description').value = ev.description || '';
   document.getElementById('organizer_name').value = ev.organizer_name || '';
   document.getElementById('organizer_contact').value = ev.organizer_contact || '';
@@ -184,6 +186,7 @@ eventForm.addEventListener('submit', async (e) => {
   formData.append('venue', document.getElementById('venue').value);
   formData.append('location', document.getElementById('location').value);
   formData.append('fees', document.getElementById('fees').value);
+  formData.append('category', document.getElementById('category').value);
   formData.append('description', document.getElementById('description').value);
   formData.append('organizer_name', document.getElementById('organizer_name').value);
   formData.append('organizer_contact', document.getElementById('organizer_contact').value);

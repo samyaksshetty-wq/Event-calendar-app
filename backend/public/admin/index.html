@@ -51,6 +51,21 @@
           <label>Entry Fee (optional)</label>
           <input type="text" id="fees" placeholder="e.g. Free, ₹200, $10 — leave blank if not applicable" />
 
+          <label>Category</label>
+          <select id="category">
+            <option value="">— None —</option>
+            <option value="Music">Music</option>
+            <option value="Food & Drink">Food & Drink</option>
+            <option value="Cultural">Cultural</option>
+            <option value="Kids & Family">Kids & Family</option>
+            <option value="Religious">Religious</option>
+            <option value="Community">Community</option>
+            <option value="Business">Business</option>
+            <option value="Workshop">Workshop</option>
+            <option value="Sports">Sports</option>
+            <option value="Other">Other</option>
+          </select>
+
           <label>Description</label>
           <textarea id="description" rows="3" placeholder="What's the event about?"></textarea>
 
@@ -81,6 +96,7 @@
               <th>Title</th>
               <th>Venue</th>
               <th>Fee</th>
+              <th>Category</th>
               <th>Brochure</th>
               <th></th>
             </tr>
