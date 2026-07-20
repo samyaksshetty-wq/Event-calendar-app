@@ -9,9 +9,9 @@ import axios from 'axios';
 //
 // - Backend deployed online (Render, Railway, etc):
 //     use that public URL, e.g. "https://your-app.onrender.com"
-export const API_BASE_URL = 'https://event-calendar-app-597h.onrender.com';
+export const API_BASE_URL = 'http://192.168.1.5:4000';
 
-const api = axios.create({ baseURL: 'https://event-calendar-app-597h.onrender.com' });
+const api = axios.create({ baseURL: API_BASE_URL });
 
 // Returns date -> event count for a given month, for calendar dots
 export function getEventDatesForMonth(year, month) {
@@ -28,9 +28,17 @@ export function getEventById(id) {
   return api.get(`/api/events/${id}`).then((r) => r.data);
 }
 
-// Returns events matching a search term (title, description, or venue)
-export function searchEvents(query) {
-  return api.get('/api/events/search', { params: { q: query } }).then((r) => r.data);
+// Returns events matching a search term (title, description, or venue),
+// optionally narrowed down to a single category.
+export function searchEvents(query, category) {
+  return api
+    .get('/api/events/search', { params: { q: query || undefined, category: category || undefined } })
+    .then((r) => r.data);
+}
+
+// Returns the list of categories currently in use, for filter chips.
+export function getCategories() {
+  return api.get('/api/events/categories').then((r) => r.data).catch(() => []);
 }
 
 // Returns the next few upcoming events, used for search-screen suggestions

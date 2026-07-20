@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, TextInput, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { searchEvents, getUpcomingEvents } from '../api/api';
+import { searchEvents, getUpcomingEvents, getCategories } from '../api/api';
 import { COLORS, RADIUS, SPACING } from '../theme';
 import FadeSlideIn from '../components/FadeSlideIn';
 import AnimatedPressable from '../components/AnimatedPressable';
@@ -12,15 +12,17 @@ const MAX_RECENT = 5;
 
 export default function SearchScreen({ navigation }) {
   const [query, setQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(null);
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
 
   const [recentSearches, setRecentSearches] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [upcoming, setUpcoming] = useState([]);
   const [upcomingLoading, setUpcomingLoading] = useState(true);
 
-  // Load recent searches + a few upcoming events to suggest, as soon as the screen opens
+  // Load recent searches, categories, and a few upcoming events, as soon as the screen opens
   useEffect(() => {
     AsyncStorage.getItem(RECENT_SEARCHES_KEY)
       .then((raw) => {
@@ -28,26 +30,44 @@ export default function SearchScreen({ navigation }) {
       })
       .catch(() => {});
 
+    getCategories().then(setCategories);
+
     getUpcomingEvents(5)
       .then(setUpcoming)
       .catch((err) => console.log('Failed to load upcoming events', err.message))
       .finally(() => setUpcomingLoading(false));
   }, []);
 
-  const runSearch = useCallback((text) => {
-    setQuery(text);
-    if (!text.trim()) {
+  const performSearch = useCallback((text, category) => {
+    if (!text.trim() && !category) {
       setResults([]);
       setSearched(false);
       return;
     }
     setLoading(true);
     setSearched(true);
-    searchEvents(text.trim())
+    searchEvents(text.trim(), category)
       .then(setResults)
       .catch((err) => console.log('Search failed', err.message))
       .finally(() => setLoading(false));
   }, []);
+
+  const runSearch = useCallback(
+    (text) => {
+      setQuery(text);
+      performSearch(text, selectedCategory);
+    },
+    [selectedCategory, performSearch]
+  );
+
+  const toggleCategory = useCallback(
+    (cat) => {
+      const next = selectedCategory === cat ? null : cat;
+      setSelectedCategory(next);
+      performSearch(query, next);
+    },
+    [selectedCategory, query, performSearch]
+  );
 
   // Only saved to "recent" once the person actually commits to a search
   // (hitting the search key), not on every keystroke.
@@ -62,7 +82,8 @@ export default function SearchScreen({ navigation }) {
   }, []);
 
   const tapRecentSearch = (term) => {
-    runSearch(term);
+    setQuery(term);
+    performSearch(term, selectedCategory);
     commitRecentSearch(term);
   };
 
@@ -85,11 +106,35 @@ export default function SearchScreen({ navigation }) {
         />
       </FadeSlideIn>
 
+      {categories.length > 0 && (
+        <FadeSlideIn delay={40}>
+          <View style={styles.categoryRow}>
+            {categories.map((cat) => {
+              const active = selectedCategory === cat;
+              return (
+                <AnimatedPressable
+                  key={cat}
+                  style={active ? styles.categoryChipActive : styles.categoryChip}
+                  onPress={() => toggleCategory(cat)}
+                  scaleTo={0.95}
+                >
+                  <Text style={active ? styles.categoryChipTextActive : styles.categoryChipText}>{cat}</Text>
+                </AnimatedPressable>
+              );
+            })}
+          </View>
+        </FadeSlideIn>
+      )}
+
       {loading && <ActivityIndicator style={{ marginTop: 20 }} color={COLORS.accent} />}
 
       {!loading && searched && results.length === 0 && (
         <FadeSlideIn>
-          <Text style={styles.emptyText}>No events match "{query}".</Text>
+          <Text style={styles.emptyText}>
+            {selectedCategory && !query.trim()
+              ? `No events in "${selectedCategory}" right now.`
+              : `No events match "${query}".`}
+          </Text>
         </FadeSlideIn>
       )}
 
@@ -183,8 +228,26 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 15,
     color: COLORS.ink,
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.sm + 4,
   },
+  categoryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: SPACING.md },
+  categoryChip: {
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 999,
+    paddingVertical: 7,
+    paddingHorizontal: 14,
+  },
+  categoryChipActive: {
+    backgroundColor: COLORS.accent,
+    borderRadius: 999,
+    paddingVertical: 7,
+    paddingHorizontal: 14,
+  },
+  categoryChipText: { color: COLORS.ink, fontWeight: '600', fontSize: 13 },
+  categoryChipTextActive: { color: '#fff', fontWeight: '600', fontSize: 13 },
+
   emptyText: { color: COLORS.muted, fontSize: 14, marginTop: 12 },
   list: { paddingBottom: 40 },
   card: {

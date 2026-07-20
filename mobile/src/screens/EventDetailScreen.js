@@ -9,6 +9,7 @@ import {
   Linking,
   Modal,
   Pressable,
+  Share,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -40,6 +41,20 @@ function Field({ label, value }) {
       {value}
     </Text>
   );
+}
+
+async function shareEvent(event) {
+  const lines = [event.title];
+  if (event.date) lines.push(`📅 ${formatDateWithDay(event.date)}`);
+  if (event.time) lines.push(`🕒 ${event.time}`);
+  if (event.venue) lines.push(`📍 ${event.venue}`);
+  lines.push('', 'Shared via Namma Events');
+
+  try {
+    await Share.share({ message: lines.join('\n') });
+  } catch (err) {
+    console.log('Share failed', err.message);
+  }
 }
 
 export default function EventDetailScreen({ route }) {
@@ -105,6 +120,21 @@ export default function EventDetailScreen({ route }) {
           <View style={styles.titleBlock}>
             <Text style={styles.titleLabel}>EVENT TITLE</Text>
             <Text style={styles.title}>{event.title}</Text>
+          </View>
+
+          <View style={styles.actionRow}>
+            {!!event.category && (
+              <View style={styles.categoryBadge}>
+                <Text style={styles.categoryBadgeText}>{event.category}</Text>
+              </View>
+            )}
+            <AnimatedPressable
+              style={styles.shareButton}
+              onPress={() => shareEvent(event)}
+              scaleTo={0.95}
+            >
+              <Text style={styles.shareButtonText}>📤 Share</Text>
+            </AnimatedPressable>
           </View>
 
           <View style={styles.metaCard}>
@@ -221,6 +251,24 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   title: { fontSize: 18, fontWeight: '600', color: '#374151' },
+
+  actionRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: SPACING.lg },
+  categoryBadge: {
+    backgroundColor: COLORS.accentSoft,
+    borderRadius: 999,
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+  },
+  categoryBadgeText: { color: COLORS.accent, fontWeight: '700', fontSize: 12 },
+  shareButton: {
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 999,
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+  },
+  shareButtonText: { color: COLORS.ink, fontWeight: '700', fontSize: 12 },
 
   metaCard: {
     backgroundColor: COLORS.surface,

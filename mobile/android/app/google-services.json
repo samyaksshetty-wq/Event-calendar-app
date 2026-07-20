@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "392021373731",
+    "project_id": "namma-events-app",
+    "storage_bucket": "namma-events-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:392021373731:android:ca490fc141659ca9485296",
+        "android_client_info": {
+          "package_name": "com.samyakshetty.nammaevents"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA4-Z5LTeFrw-YXJqFX3CLToENgdGx1z4U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
