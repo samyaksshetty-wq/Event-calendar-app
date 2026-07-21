@@ -17,7 +17,6 @@ export default function AnimatedPressable({ onPress, style, children, scaleTo = 
     <Pressable onPress={onPress} onPressIn={onPressIn} onPressOut={onPressOut} disabled={disabled} style={style}>
       <Animated.View
         style={{
-          flex: 1,
           flexDirection: style?.flexDirection,
           alignItems: style?.alignItems,
           justifyContent: style?.justifyContent,
