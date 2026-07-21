@@ -11,7 +11,7 @@ import axios from 'axios';
 //     use that public URL, e.g. "https://your-app.onrender.com"
 export const API_BASE_URL = 'https://event-calendar-app-597h.onrender.com';
 
-const api = axios.create({ baseURL: API_BASE_URL });
+const api = axios.create({ baseURL: 'https://event-calendar-app-597h.onrender.com' });
 
 // Returns date -> event count for a given month, for calendar dots
 export function getEventDatesForMonth(year, month) {
