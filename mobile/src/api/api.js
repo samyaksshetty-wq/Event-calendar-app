@@ -9,7 +9,7 @@ import axios from 'axios';
 //
 // - Backend deployed online (Render, Railway, etc):
 //     use that public URL, e.g. "https://your-app.onrender.com"
-export const API_BASE_URL = 'http://192.168.1.5:4000';
+export const API_BASE_URL = 'https://event-calendar-app-597h.onrender.com';
 
 const api = axios.create({ baseURL: API_BASE_URL });
 

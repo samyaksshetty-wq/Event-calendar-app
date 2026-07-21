@@ -6,6 +6,7 @@ import CalendarScreen from '../screens/CalendarScreen';
 import EventDetailScreen from '../screens/EventDetailScreen';
 import SearchScreen from '../screens/SearchScreen';
 import ContactScreen from '../screens/ContactScreen';
+import SavedEventsScreen from '../screens/SavedEventsScreen';
 import { COLORS } from '../theme';
 
 const Stack = createNativeStackNavigator();
@@ -25,6 +26,7 @@ export default function AppNavigator() {
         <Stack.Screen name="Calendar" component={CalendarScreen} options={{ headerShown: false }} />
         <Stack.Screen name="EventDetail" component={EventDetailScreen} options={{ title: 'Event Details' }} />
         <Stack.Screen name="Search" component={SearchScreen} options={{ title: 'Search Events' }} />
+        <Stack.Screen name="SavedEvents" component={SavedEventsScreen} options={{ title: 'Saved Events' }} />
         <Stack.Screen name="Contact" component={ContactScreen} options={{ title: 'List Your Event' }} />
       </Stack.Navigator>
     </NavigationContainer>

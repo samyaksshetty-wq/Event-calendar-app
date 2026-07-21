@@ -13,10 +13,49 @@ import FadeSlideIn from '../components/FadeSlideIn';
 import AnimatedPressable from '../components/AnimatedPressable';
 import BackgroundDecoration from '../components/BackgroundDecoration';
 import AdBanner from '../components/AdBanner';
+import CountdownBadge from '../components/CountdownBadge';
+import { useFavorite } from '../favorites/useFavorites';
 
 function formatDateHeading(dateString) {
   const d = new Date(dateString + 'T00:00:00');
   return d.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+}
+
+// A single ticket card, pulled out as its own component so useFavorite (a
+// hook) can be called once per event - hooks can't be called inside a .map().
+function TicketCard({ ev, delay, navigation }) {
+  const [isFavorite, toggleFavorite] = useFavorite(ev.id);
+
+  return (
+    <FadeSlideIn delay={delay}>
+      <AnimatedPressable
+        style={styles.ticketCard}
+        onPress={() => navigation.navigate('EventDetail', { id: ev.id })}
+        scaleTo={0.985}
+      >
+        <View style={styles.notchLeft} />
+        <View style={styles.notchRight} />
+
+        <View style={styles.ticketTopRow}>
+          <CountdownBadge date={ev.date} />
+          <AnimatedPressable onPress={toggleFavorite} scaleTo={0.85} style={styles.ticketHeartButton}>
+            <Text style={styles.ticketHeart}>{isFavorite ? '❤️' : '🤍'}</Text>
+          </AnimatedPressable>
+        </View>
+
+        <Text style={styles.ticketTitle}>{ev.title}</Text>
+        {!!ev.organizer_name && (
+          <Text style={styles.ticketMeta}>
+            <Text style={styles.ticketMetaLabel}>Organizer: </Text>{ev.organizer_name}
+          </Text>
+        )}
+
+        <View style={styles.ticketDivider} />
+
+        <Text style={styles.detailsButtonText}>View more details  →</Text>
+      </AnimatedPressable>
+    </FadeSlideIn>
+  );
 }
 
 export default function CalendarScreen({ navigation }) {
@@ -71,19 +110,29 @@ export default function CalendarScreen({ navigation }) {
     <View style={styles.screen}>
       <BackgroundDecoration />
       <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
-        <FadeSlideIn style={styles.headerBlock}>
-          <Text style={styles.eyebrow}>WHAT'S ON</Text>
-          <Text style={styles.header}>
-            <Text style={{ color: COLORS.brandYellow || '#F5C518' }}>Namma</Text>
-            <Text style={{ color: COLORS.brandRed }}> Events</Text>
-          </Text>
-          <Text style={styles.description}>
-            Explore cultural programmes, sports events, workshops, and community meetups — 
-            all organized by and for the Kannadiga community. Simply tap on any date in 
-            the calendar below to discover what events are happening that day, and never 
-            miss out on what matters to you!
-          </Text>
-        </FadeSlideIn>
+        <View style={styles.headerRow}>
+          <FadeSlideIn style={[styles.headerBlock, { flex: 1 }]}>
+            <Text style={styles.eyebrow}>WHAT'S ON</Text>
+            <Text style={styles.header}>
+              <Text style={{ color: COLORS.brandYellow || '#F5C518' }}>Namma</Text>
+              <Text style={{ color: COLORS.brandRed }}> Events</Text>
+            </Text>
+            <Text style={styles.description}>
+              Search your favourite events and discover what's happening near you — from concerts
+              and workshops to community meetups, browse the calendar and never miss what matters to you.
+            </Text>
+          </FadeSlideIn>
+
+          <FadeSlideIn>
+            <AnimatedPressable
+              style={styles.savedIconButton}
+              onPress={() => navigation.navigate('SavedEvents')}
+              scaleTo={0.9}
+            >
+              <Text style={styles.savedIcon}>❤️</Text>
+            </AnimatedPressable>
+          </FadeSlideIn>
+        </View>
 
       <FadeSlideIn delay={90} style={styles.actionRow}>
         <AnimatedPressable style={styles.actionButton} onPress={() => navigation.navigate('Search')}>
@@ -93,6 +142,13 @@ export default function CalendarScreen({ navigation }) {
         <AnimatedPressable style={styles.actionButtonOutline} onPress={() => navigation.navigate('Contact')}>
           <Text style={styles.actionButtonOutlineIcon}>📣</Text>
           <Text style={styles.actionButtonOutlineText}>List Your Event</Text>
+        </AnimatedPressable>
+      </FadeSlideIn>
+
+      <FadeSlideIn delay={120} style={{ marginBottom: SPACING.lg }}>
+        <AnimatedPressable style={styles.savedButton} onPress={() => navigation.navigate('SavedEvents')}>
+          <Text style={styles.savedButtonIcon}>❤️</Text>
+          <Text style={styles.savedButtonText}>My Saved Events</Text>
         </AnimatedPressable>
       </FadeSlideIn>
 
@@ -148,27 +204,7 @@ export default function CalendarScreen({ navigation }) {
 
           {!dayLoading &&
             dayEvents.map((ev, index) => (
-              <FadeSlideIn key={ev.id} delay={index * 70}>
-                <AnimatedPressable
-                  style={styles.ticketCard}
-                  onPress={() => navigation.navigate('EventDetail', { id: ev.id })}
-                  scaleTo={0.985}
-                >
-                  <View style={styles.notchLeft} />
-                  <View style={styles.notchRight} />
-
-                  <Text style={styles.ticketTitle}>{ev.title}</Text>
-                  {!!ev.organizer_name && (
-                    <Text style={styles.ticketMeta}>
-                      <Text style={styles.ticketMetaLabel}>Organizer: </Text>{ev.organizer_name}
-                    </Text>
-                  )}
-
-                  <View style={styles.ticketDivider} />
-
-                  <Text style={styles.detailsButtonText}>View more details  →</Text>
-                </AnimatedPressable>
-              </FadeSlideIn>
+              <TicketCard key={ev.id} ev={ev} delay={index * 70} navigation={navigation} />
             ))}
         </View>
       )}
@@ -183,7 +219,19 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: 'transparent' },
   scrollContent: { paddingTop: 60, paddingHorizontal: SPACING.md, paddingBottom: 48 },
 
-  headerBlock: { marginBottom: SPACING.lg },
+  headerRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: SPACING.lg },
+  headerBlock: {},
+  savedIconButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  savedIcon: { fontSize: 18 },
   eyebrow: {
     fontSize: 11,
     fontWeight: '700',
@@ -224,6 +272,20 @@ const styles = StyleSheet.create({
   },
   actionButtonOutlineIcon: { fontSize: 15 },
   actionButtonOutlineText: { color: COLORS.accent, fontWeight: '700', fontSize: 14 },
+
+  savedButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 7,
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 999,
+    paddingVertical: 12,
+  },
+  savedButtonIcon: { fontSize: 14 },
+  savedButtonText: { color: COLORS.ink, fontWeight: '700', fontSize: 13 },
 
   calendarCard: {
     backgroundColor: COLORS.surface,
@@ -281,6 +343,9 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
   },
   ticketTitle: { fontSize: 16, fontWeight: '700', color: COLORS.ink, marginBottom: 8 },
+  ticketTopRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
+  ticketHeartButton: { padding: 2 },
+  ticketHeart: { fontSize: 16 },
   ticketMeta: { fontSize: 13, color: COLORS.muted },
   ticketMetaLabel: { fontWeight: '700', color: COLORS.ink },
   ticketDivider: {

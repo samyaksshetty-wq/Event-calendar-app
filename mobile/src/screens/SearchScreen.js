@@ -6,9 +6,31 @@ import { COLORS, RADIUS, SPACING } from '../theme';
 import FadeSlideIn from '../components/FadeSlideIn';
 import AnimatedPressable from '../components/AnimatedPressable';
 import BackgroundDecoration from '../components/BackgroundDecoration';
+import CountdownBadge from '../components/CountdownBadge';
+import { useFavorite } from '../favorites/useFavorites';
 
 const RECENT_SEARCHES_KEY = 'namma_events_recent_searches';
 const MAX_RECENT = 5;
+
+// A single result/recommendation card, pulled out as its own component so
+// useFavorite (a hook) can be called once per event.
+function EventCard({ event, onPress }) {
+  const [isFavorite, toggleFavorite] = useFavorite(event.id);
+
+  return (
+    <AnimatedPressable style={styles.card} onPress={onPress} scaleTo={0.985}>
+      <View style={styles.cardTopRow}>
+        <CountdownBadge date={event.date} />
+        <AnimatedPressable onPress={toggleFavorite} scaleTo={0.85} style={styles.heartButton}>
+          <Text style={styles.heart}>{isFavorite ? '❤️' : '🤍'}</Text>
+        </AnimatedPressable>
+      </View>
+      <Text style={styles.title}>{event.title}</Text>
+      <Text style={styles.meta}>📅 {event.date}{event.time ? `  •  🕒 ${event.time}` : ''}</Text>
+      {!!event.venue && <Text style={styles.meta}>📍 {event.venue}</Text>}
+    </AnimatedPressable>
+  );
+}
 
 export default function SearchScreen({ navigation }) {
   const [query, setQuery] = useState('');
@@ -145,15 +167,7 @@ export default function SearchScreen({ navigation }) {
           contentContainerStyle={styles.list}
           renderItem={({ item, index }) => (
             <FadeSlideIn delay={index * 60}>
-              <AnimatedPressable
-                style={styles.card}
-                onPress={() => navigation.navigate('EventDetail', { id: item.id })}
-                scaleTo={0.985}
-              >
-                <Text style={styles.title}>{item.title}</Text>
-                <Text style={styles.meta}>📅 {item.date}{item.time ? `  •  🕒 ${item.time}` : ''}</Text>
-                {!!item.venue && <Text style={styles.meta}>📍 {item.venue}</Text>}
-              </AnimatedPressable>
+              <EventCard event={item} onPress={() => navigation.navigate('EventDetail', { id: item.id })} />
             </FadeSlideIn>
           )}
         />
@@ -198,15 +212,7 @@ export default function SearchScreen({ navigation }) {
               {!upcomingLoading &&
                 upcoming.map((ev, index) => (
                   <FadeSlideIn key={ev.id} delay={180 + index * 60}>
-                    <AnimatedPressable
-                      style={styles.card}
-                      onPress={() => navigation.navigate('EventDetail', { id: ev.id })}
-                      scaleTo={0.985}
-                    >
-                      <Text style={styles.title}>{ev.title}</Text>
-                      <Text style={styles.meta}>📅 {ev.date}{ev.time ? `  •  🕒 ${ev.time}` : ''}</Text>
-                      {!!ev.venue && <Text style={styles.meta}>📍 {ev.venue}</Text>}
-                    </AnimatedPressable>
+                    <EventCard event={ev} onPress={() => navigation.navigate('EventDetail', { id: ev.id })} />
                   </FadeSlideIn>
                 ))}
             </View>
@@ -260,6 +266,9 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 16, fontWeight: '700', color: COLORS.ink, marginBottom: 6 },
   meta: { fontSize: 13, color: COLORS.muted, marginTop: 2 },
+  cardTopRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 },
+  heartButton: { padding: 2 },
+  heart: { fontSize: 15 },
 
   suggestionSection: { marginBottom: SPACING.md },
   suggestionHeading: { fontSize: 13, fontWeight: '700', color: COLORS.accent, textTransform: 'uppercase', letterSpacing: 0.5 },

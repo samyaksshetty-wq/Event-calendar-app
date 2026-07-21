@@ -20,6 +20,8 @@ import FadeSlideIn from '../components/FadeSlideIn';
 import AnimatedPressable from '../components/AnimatedPressable';
 import AdBanner from '../components/AdBanner';
 import InterstitialAd from '../components/InterstitialAd';
+import { useFavorite } from '../favorites/useFavorites';
+import { getRelativeDayLabel } from '../utils/dateHelpers';
 
 function formatDateWithDay(dateString) {
   if (!dateString) return dateString;
@@ -66,6 +68,7 @@ export default function EventDetailScreen({ route }) {
   // either been dismissed by the user or determined not to exist. This is
   // what stops the detail content from flashing on screen before the ad does.
   const [adGateOpen, setAdGateOpen] = useState(false);
+  const [isFavorite, toggleFavorite] = useFavorite(id);
 
   useEffect(() => {
     getEventById(id)
@@ -129,6 +132,13 @@ export default function EventDetailScreen({ route }) {
               </View>
             )}
             <AnimatedPressable
+              style={isFavorite ? styles.favoriteButtonActive : styles.favoriteButton}
+              onPress={toggleFavorite}
+              scaleTo={0.9}
+            >
+              <Text style={styles.favoriteButtonText}>{isFavorite ? '❤️ Saved' : '🤍 Save'}</Text>
+            </AnimatedPressable>
+            <AnimatedPressable
               style={styles.shareButton}
               onPress={() => shareEvent(event)}
               scaleTo={0.95}
@@ -138,7 +148,14 @@ export default function EventDetailScreen({ route }) {
           </View>
 
           <View style={styles.metaCard}>
-            <Field label="Date" value={formatDateWithDay(event.date)} />
+            <Field
+              label="Date"
+              value={
+                getRelativeDayLabel(event.date)
+                  ? `${formatDateWithDay(event.date)}  (${getRelativeDayLabel(event.date)})`
+                  : formatDateWithDay(event.date)
+              }
+            />
             <Field label="Timing" value={event.time} />
             <Field label="Venue" value={event.venue} />
             <Field label="Entry Fee" value={event.fees} />
@@ -269,6 +286,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
   },
   shareButtonText: { color: COLORS.ink, fontWeight: '700', fontSize: 12 },
+
+  favoriteButton: {
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 999,
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+  },
+  favoriteButtonActive: {
+    backgroundColor: '#FDE8E8',
+    borderWidth: 1,
+    borderColor: '#F5B8B8',
+    borderRadius: 999,
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+  },
+  favoriteButtonText: { fontWeight: '700', fontSize: 12, color: COLORS.ink },
 
   metaCard: {
     backgroundColor: COLORS.surface,
