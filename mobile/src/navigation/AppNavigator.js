@@ -11,9 +11,25 @@ import { COLORS } from '../theme';
 
 const Stack = createNativeStackNavigator();
 
+// Maps the custom URL scheme to screens. This is what makes the app open
+// directly to a specific event when someone taps a shared link (via the
+// backend's /e/:id bridge page, which redirects here if the app is installed).
+const linking = {
+  prefixes: ['nammaevents://'],
+  config: {
+    screens: {
+      Calendar: '',
+      EventDetail: 'event/:id',
+      Search: 'search',
+      SavedEvents: 'saved',
+      Contact: 'contact',
+    },
+  },
+};
+
 export default function AppNavigator() {
   return (
-    <NavigationContainer>
+    <NavigationContainer linking={linking}>
       <Stack.Navigator
         screenOptions={{
           headerStyle: { backgroundColor: COLORS.bg },

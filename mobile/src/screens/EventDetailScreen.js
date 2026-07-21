@@ -14,7 +14,7 @@ import {
 import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
-import { getEventById, brochureFullUrl } from '../api/api';
+import { getEventById, brochureFullUrl, API_BASE_URL } from '../api/api';
 import { COLORS, RADIUS, SPACING } from '../theme';
 import FadeSlideIn from '../components/FadeSlideIn';
 import AnimatedPressable from '../components/AnimatedPressable';
@@ -47,10 +47,9 @@ function Field({ label, value }) {
 
 async function shareEvent(event) {
   const lines = [event.title];
-  if (event.date) lines.push(`📅 ${formatDateWithDay(event.date)}`);
-  if (event.time) lines.push(`🕒 ${event.time}`);
-  if (event.venue) lines.push(`📍 ${event.venue}`);
-  lines.push('', 'Shared via Namma Events');
+  if (event.organizer_name) lines.push(`By ${event.organizer_name}`);
+  if (event.description) lines.push('', event.description);
+  lines.push('', `View details: ${API_BASE_URL}/e/${event.id}`);
 
   try {
     await Share.share({ message: lines.join('\n') });
