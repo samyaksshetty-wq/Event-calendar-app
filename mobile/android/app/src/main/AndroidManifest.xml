@@ -6,6 +6,7 @@
   <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
   <uses-permission android:name="android.permission.VIBRATE"/>
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+  <uses-sdk android:minSdkVersion="23" android:targetSdkVersion="${targetSdkVersion}" />
   <queries>
     <intent>
       <action android:name="android.intent.action.VIEW"/>
@@ -31,6 +32,7 @@
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="com.samyakshetty.nammaevents"/>
+        <data android:scheme="nammaevents"/>
       </intent-filter>
     </activity>
     <activity android:name="com.facebook.react.devsupport.DevSettingsActivity" android:exported="false"/>

@@ -107,15 +107,17 @@ android {
     ndkVersion rootProject.ext.ndkVersion
 
     buildToolsVersion rootProject.ext.buildToolsVersion
-    compileSdk rootProject.ext.compileSdkVersion
+    compileSdk 34
 
     namespace 'com.samyakshetty.nammaevents'
     defaultConfig {
         applicationId 'com.samyakshetty.nammaevents'
         minSdkVersion rootProject.ext.minSdkVersion
-        targetSdkVersion rootProject.ext.targetSdkVersion
+        compileSdkVersion 34
+        targetSdkVersion 34
         versionCode 1
         versionName "1.0.0"
+        manifestPlaceholders = [targetSdkVersion: "35"] 
     }
     signingConfigs {
         debug {
