@@ -5,10 +5,10 @@ import { API_BASE_URL } from '../api/api';
 import FadeSlideIn from '../components/FadeSlideIn';
 import AnimatedPressable from '../components/AnimatedPressable';
 import BackgroundDecoration from '../components/BackgroundDecoration';
-import AdBanner from '../components/AdBanner';
+import AdMobBanner from '../components/AdMobBanner';
 
 // TODO: replace this with your real number before publishing the app.
-const CONTACT_PHONE = '+971 50 9736 263';
+const CONTACT_PHONE = '+91 00000 00000';
 
 export default function ContactScreen() {
   return (
@@ -19,7 +19,8 @@ export default function ContactScreen() {
         <Text style={styles.heading}>List Your Event</Text>
         <Text style={styles.body}>
           Are you organizing an event and want it featured on the calendar? Reach out with
-          your event details on the below contact number — and it'll be added for everyone to see!
+          your event details — title, date, time, venue, a short description, and a
+          brochure (image or PDF) — and it'll be added for everyone to see.
         </Text>
       </FadeSlideIn>
 
@@ -44,7 +45,7 @@ export default function ContactScreen() {
         </AnimatedPressable>
       </FadeSlideIn>
       </ScrollView>
-      <AdBanner placement="contact_banner" />
+      <AdMobBanner />
     </View>
   );
 }

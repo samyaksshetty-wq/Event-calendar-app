@@ -12,7 +12,7 @@ import { COLORS, RADIUS, SPACING } from '../theme';
 import FadeSlideIn from '../components/FadeSlideIn';
 import AnimatedPressable from '../components/AnimatedPressable';
 import BackgroundDecoration from '../components/BackgroundDecoration';
-import AdBanner from '../components/AdBanner';
+import AdMobBanner from '../components/AdMobBanner';
 import CountdownBadge from '../components/CountdownBadge';
 import { useFavorite } from '../favorites/useFavorites';
 
@@ -114,7 +114,7 @@ export default function CalendarScreen({ navigation }) {
           <FadeSlideIn style={[styles.headerBlock, { flex: 1 }]}>
             <Text style={styles.eyebrow}>WHAT'S ON</Text>
             <Text style={styles.header}>
-              <Text style={{ color: COLORS.brandYellow || '#F5C518' }}>Namma</Text>
+              <Text style={{ color: COLORS.brandYellow | '#F5C518'}}>Namma</Text>
               <Text style={{ color: COLORS.brandRed }}> Events</Text>
             </Text>
             <Text style={styles.description}>
@@ -209,7 +209,7 @@ export default function CalendarScreen({ navigation }) {
         </View>
       )}
       </ScrollView>
-      <AdBanner placement="calendar_banner" />
+      <AdMobBanner />
     </View>
   );
 }

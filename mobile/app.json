@@ -1,9 +1,9 @@
 {
   "expo": {
     "name": "Namma Events",
-    "scheme": "nammaevents",
     "slug": "event-calendar-app",
     "version": "1.0.0",
+    "scheme": "nammaevents",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "icon": "./assets/logo.png",
@@ -12,9 +12,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#FAF9F6"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.samyakshetty.nammaevents"
@@ -38,6 +36,22 @@
         {
           "icon": "./assets/logo.png",
           "color": "#C8102E"
+        }
+      ],
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-3940256099942544~3347511713",
+          "iosAppId": "ca-app-pub-3940256099942544~1458002511"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36
+          }
         }
       ]
     ]

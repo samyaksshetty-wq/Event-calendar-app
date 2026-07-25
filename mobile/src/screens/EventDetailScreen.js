@@ -18,10 +18,10 @@ import { getEventById, brochureFullUrl, API_BASE_URL } from '../api/api';
 import { COLORS, RADIUS, SPACING } from '../theme';
 import FadeSlideIn from '../components/FadeSlideIn';
 import AnimatedPressable from '../components/AnimatedPressable';
-import AdBanner from '../components/AdBanner';
-import InterstitialAd from '../components/InterstitialAd';
 import { useFavorite } from '../favorites/useFavorites';
 import { getRelativeDayLabel } from '../utils/dateHelpers';
+import AdMobBanner from '../components/AdMobBanner';
+import { useInterstitialAd } from '../ads/useInterstitialAd';
 
 function formatDateWithDay(dateString) {
   if (!dateString) return dateString;
@@ -63,11 +63,8 @@ export default function EventDetailScreen({ route }) {
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [brochureVisible, setBrochureVisible] = useState(false);
-  // Starts closed - the screen's real content only renders once the ad has
-  // either been dismissed by the user or determined not to exist. This is
-  // what stops the detail content from flashing on screen before the ad does.
-  const [adGateOpen, setAdGateOpen] = useState(false);
   const [isFavorite, toggleFavorite] = useFavorite(id);
+  const showInterstitial = useInterstitialAd();
 
   useEffect(() => {
     getEventById(id)
@@ -76,13 +73,19 @@ export default function EventDetailScreen({ route }) {
       .finally(() => setLoading(false));
   }, [id]);
 
-  const ready = adGateOpen && !loading;
+  // Show the interstitial once the event has loaded. If the ad isn't ready
+  // yet, showInterstitial() just does nothing - it never blocks the screen.
+  useEffect(() => {
+    if (!loading) {
+      showInterstitial();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]);
 
-  if (!ready) {
+  if (loading) {
     return (
       <View style={styles.centered}>
-        <InterstitialAd placement="event_detail_interstitial" onDone={() => setAdGateOpen(true)} />
-        {adGateOpen && <ActivityIndicator color={COLORS.accent} />}
+        <ActivityIndicator color={COLORS.accent} />
       </View>
     );
   }
@@ -206,8 +209,6 @@ export default function EventDetailScreen({ route }) {
           )}
         </FadeSlideIn>
       </ScrollView>
-
-      <AdBanner placement="event_detail_banner" />
 
       {/* Full-screen in-app brochure viewer - no external app/browser involved */}
       <Modal
