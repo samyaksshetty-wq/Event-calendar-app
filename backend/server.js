@@ -6,7 +6,6 @@ const path = require('path');
 const { initDb } = require('./db');
 const eventsRouter = require('./routes/events');
 const adminRouter = require('./routes/admin');
-const adsRouter = require('./routes/ads');
 const pushRouter = require('./routes/push');
 const shareRouter = require('./routes/share');
 
@@ -25,7 +24,6 @@ app.use('/privacy', express.static(path.join(__dirname, 'public', 'privacy')));
 // API routes
 app.use('/api/events', eventsRouter);   // public, used by the mobile app
 app.use('/api/admin', adminRouter);     // protected, used by the admin panel
-app.use('/api/ads', adsRouter);         // public, used by the mobile app
 app.use('/api/push', pushRouter);       // public register + secret-protected send-today
 app.use('/e', shareRouter);             // public share-link landing page (opens app or store)
 
