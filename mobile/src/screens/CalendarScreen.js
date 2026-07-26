@@ -122,16 +122,6 @@ export default function CalendarScreen({ navigation }) {
               and workshops to community meetups, browse the calendar and never miss what matters to you.
             </Text>
           </FadeSlideIn>
-
-          <FadeSlideIn>
-            <AnimatedPressable
-              style={styles.savedIconButton}
-              onPress={() => navigation.navigate('SavedEvents')}
-              scaleTo={0.9}
-            >
-              <Text style={styles.savedIcon}>❤️</Text>
-            </AnimatedPressable>
-          </FadeSlideIn>
         </View>
 
       <FadeSlideIn delay={90} style={styles.actionRow}>
@@ -221,17 +211,6 @@ const styles = StyleSheet.create({
 
   headerRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: SPACING.lg },
   headerBlock: {},
-  savedIconButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: COLORS.surface,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  savedIcon: { fontSize: 18 },
   eyebrow: {
     fontSize: 11,
     fontWeight: '700',

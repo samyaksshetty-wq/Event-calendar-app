@@ -7,6 +7,7 @@ const { v4: uuidv4 } = require('uuid');
 const { createClient } = require('@supabase/supabase-js');
 const { pool } = require('../db');
 const { requireAuth } = require('../middleware/auth');
+const { sendPushToAllDevices } = require('../utils/sendPush');
 
 const router = express.Router();
 
@@ -41,40 +42,6 @@ async function uploadBrochure(file) {
   }
 
   const { data } = supabase.storage.from(BUCKET).getPublicUrl(filename);
-  return data.publicUrl;
-}
-
-// --- Ad media (separate bucket, allows video too, bigger size limit) ---
-const AD_BUCKET = 'ads';
-const IMAGE_EXTS = ['.jpg', '.jpeg', '.png', '.webp'];
-const VIDEO_EXTS = ['.mp4', '.mov', '.webm'];
-
-const adUpload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB - video ads need more room than brochures
-  fileFilter: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    if ([...IMAGE_EXTS, ...VIDEO_EXTS].includes(ext)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only JPG, PNG, WEBP images or MP4, MOV, WEBM videos are allowed for ads'));
-    }
-  },
-});
-
-async function uploadAdMedia(file) {
-  if (!file) return null;
-  const filename = `${uuidv4()}${path.extname(file.originalname)}`;
-
-  const { error } = await supabase.storage.from(AD_BUCKET).upload(filename, file.buffer, {
-    contentType: file.mimetype,
-  });
-  if (error) {
-    console.error('Supabase Storage upload error (full detail):', error);
-    throw new Error(`Ad media upload failed: ${error.message}`);
-  }
-
-  const { data } = supabase.storage.from(AD_BUCKET).getPublicUrl(filename);
   return data.publicUrl;
 }
 
@@ -120,7 +87,17 @@ router.post('/events', upload.single('brochure'), async (req, res) => {
       [id, title, description || '', date, time || '', venue || '', location || '', fees || '', category || '', organizer_name || '', organizer_contact || '', brochure_url]
     );
 
-    res.status(201).json(rows[0]);
+    const newEvent = rows[0];
+
+    // Notify everyone right away - best effort, fire-and-forget so a push
+    // hiccup never blocks or breaks the actual event creation.
+    sendPushToAllDevices(pool, {
+      title: 'New Event Added! 🎉',
+      body: newEvent.venue ? `${newEvent.title} at ${newEvent.venue}` : newEvent.title,
+      data: { type: 'new_event', eventId: newEvent.id },
+    }).catch((err) => console.error('New-event push failed:', err.message));
+
+    res.status(201).json(newEvent);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message || 'Failed to create event' });
@@ -169,47 +146,6 @@ router.delete('/events/:id', async (req, res) => {
   if (!rows[0]) return res.status(404).json({ error: 'Event not found' });
 
   await pool.query('DELETE FROM events WHERE id = $1', [req.params.id]);
-  res.json({ success: true });
-});
-
-// GET all ads (admin dashboard table)
-router.get('/ads', async (req, res) => {
-  const { rows } = await pool.query('SELECT * FROM ads ORDER BY created_at DESC');
-  res.json(rows);
-});
-
-// CREATE ad
-router.post('/ads', adUpload.single('media'), async (req, res) => {
-  try {
-    const { placement, start_date, end_date } = req.body;
-    if (!placement || !start_date || !end_date || !req.file) {
-      return res.status(400).json({ error: 'Placement, start date, end date, and a media file are all required' });
-    }
-
-    const ext = path.extname(req.file.originalname).toLowerCase();
-    const media_type = VIDEO_EXTS.includes(ext) ? 'video' : 'image';
-    const media_url = await uploadAdMedia(req.file);
-    const id = uuidv4();
-
-    const { rows } = await pool.query(
-      `INSERT INTO ads (id, placement, media_type, media_url, start_date, end_date)
-       VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
-      [id, placement, media_type, media_url, start_date, end_date]
-    );
-
-    res.status(201).json(rows[0]);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message || 'Failed to create ad' });
-  }
-});
-
-// DELETE ad
-router.delete('/ads/:id', async (req, res) => {
-  const { rows } = await pool.query('SELECT * FROM ads WHERE id = $1', [req.params.id]);
-  if (!rows[0]) return res.status(404).json({ error: 'Ad not found' });
-
-  await pool.query('DELETE FROM ads WHERE id = $1', [req.params.id]);
   res.json({ success: true });
 });
 

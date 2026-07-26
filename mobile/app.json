@@ -15,7 +15,11 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.samyakshetty.nammaevents"
+      "bundleIdentifier": "com.samyakshetty.nammaevents",
+      "infoPlist": {
+        "NSUserTrackingUsageDescription": "This identifier is used to show you relevant ads and support the app.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.samyakshetty.nammaevents",

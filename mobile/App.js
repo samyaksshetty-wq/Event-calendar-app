@@ -4,6 +4,7 @@ import { View, Text, StyleSheet, Animated, Image } from 'react-native';
 import AppNavigator from './src/navigation/AppNavigator';
 import { COLORS } from './src/theme';
 import { registerForPushNotifications } from './src/notifications/registerForPush';
+import { requestTrackingPermission } from './src/ads/requestTracking';
 
 const LYRIC_LINE_1 = ['ಜಯ', 'ಭಾರತ', 'ಜನನಿಯ', 'ತನುಜಾತೆ,'];
 const LYRIC_LINE_2 = ['ಜಯ', 'ಹೇ', 'ಕರ್ನಾಟಕ', 'ಮಾತೆ!'];
@@ -47,6 +48,13 @@ export default function App() {
         // Ask for notification permission right as the real app appears,
         // rather than immediately on cold open where it'd compete with the splash.
         registerForPushNotifications();
+
+        // On iOS, Apple requires this prompt before AdMob can request
+        // personalized ads. Staggered slightly after the notification prompt
+        // so the two system dialogs don't appear on top of each other.
+        setTimeout(() => {
+          requestTrackingPermission();
+        }, 1200);
       });
     }, 5000);
 
