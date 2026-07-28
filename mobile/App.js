@@ -4,6 +4,7 @@ import { View, Text, StyleSheet, Animated, Image } from 'react-native';
 import AppNavigator from './src/navigation/AppNavigator';
 import { COLORS } from './src/theme';
 import { registerForPushNotifications } from './src/notifications/registerForPush';
+import { setupNotificationTapHandling } from './src/notifications/handleNotificationTap';
 import { requestTrackingPermission } from './src/ads/requestTracking';
 
 const LYRIC_LINE_1 = ['ಜಯ', 'ಭಾರತ', 'ಜನನಿಯ', 'ತನುಜಾತೆ,'];
@@ -59,6 +60,12 @@ export default function App() {
     }, 5000);
 
     return () => clearTimeout(timer);
+  }, []);
+
+  // Set up separately from the splash timer above so a cold-start launch via
+  // notification tap is captured immediately, not only once the splash ends.
+  useEffect(() => {
+    return setupNotificationTapHandling();
   }, []);
 
   return (

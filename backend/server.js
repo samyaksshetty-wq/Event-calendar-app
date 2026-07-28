@@ -31,6 +31,21 @@ app.get('/', (req, res) => {
   res.send('Event Calendar API is running. Admin panel is at /admin');
 });
 
+// Catches errors forwarded by asyncHandler-wrapped routes (e.g. a failed DB
+// query) so one bad request returns a 500 instead of crashing the server.
+app.use((err, req, res, next) => {
+  console.error('Unhandled route error:', err);
+  if (res.headersSent) return next(err);
+  res.status(500).json({ error: 'Something went wrong' });
+});
+
+// Last-resort safety net for any rejection that slips through outside a
+// request (e.g. a fire-and-forget promise) - log it instead of letting
+// Node's default behavior terminate the process.
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled promise rejection:', reason);
+});
+
 const PORT = process.env.PORT || 4000;
 
 initDb()

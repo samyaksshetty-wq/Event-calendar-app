@@ -1,5 +1,6 @@
 const express = require('express');
 const { pool } = require('../db');
+const { asyncHandler } = require('../utils/asyncHandler');
 
 const router = express.Router();
 
@@ -19,7 +20,7 @@ function escapeHtml(str) {
 // GET /e/:id - the link people actually get when someone shares an event.
 // Tries to open the app straight to that event; if the app isn't installed,
 // sends the person to the Play Store (or App Store, once that exists) instead.
-router.get('/:id', async (req, res) => {
+router.get('/:id', asyncHandler(async (req, res) => {
   const { rows } = await pool.query('SELECT * FROM events WHERE id = $1', [req.params.id]);
   const event = rows[0];
 
@@ -70,6 +71,6 @@ router.get('/:id', async (req, res) => {
   </script>
 </body>
 </html>`);
-});
+}));
 
 module.exports = router;

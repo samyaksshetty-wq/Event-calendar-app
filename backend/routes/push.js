@@ -1,12 +1,13 @@
 const express = require('express');
 const { pool } = require('../db');
+const { asyncHandler } = require('../utils/asyncHandler');
 
 const router = express.Router();
 
 // POST /api/push/register - called by the app once it has permission and a
 // device token. Public (no login needed) since it's just registering interest
 // in receiving notifications, same as any consumer app.
-router.post('/register', async (req, res) => {
+router.post('/register', asyncHandler(async (req, res) => {
   const { token } = req.body;
   if (!token) return res.status(400).json({ error: 'token is required' });
 
@@ -15,14 +16,14 @@ router.post('/register', async (req, res) => {
     [token]
   );
   res.json({ success: true });
-});
+}));
 
 // POST /api/push/send-today - checks if there are events today, and if so,
 // pushes a notification to every registered device. Not meant to be called by
 // the app itself - a scheduled job (see .github/workflows/daily-notify.yml)
 // triggers this once a day. Protected by a shared secret so it can't be
 // abused to spam your users.
-router.post('/send-today', async (req, res) => {
+router.post('/send-today', asyncHandler(async (req, res) => {
   const secret = req.headers['x-notify-secret'];
   if (!secret || secret !== process.env.NOTIFY_SECRET) {
     return res.status(401).json({ error: 'Unauthorized' });
@@ -71,6 +72,6 @@ router.post('/send-today', async (req, res) => {
   }
 
   res.json({ sent: true, eventCount: events.length, deviceCount: tokens.length, expoResults });
-});
+}));
 
 module.exports = router;

@@ -7,6 +7,13 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false }, // required for Supabase's connection
 });
 
+// pg emits 'error' on an idle client when the connection drops (e.g. the
+// pooler recycling it). Without a listener, that error is uncaught and
+// crashes the whole process - this just logs it instead.
+pool.on('error', (err) => {
+  console.error('Unexpected database pool error:', err.message);
+});
+
 async function initDb() {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS events (

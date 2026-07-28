@@ -8,6 +8,7 @@ const { createClient } = require('@supabase/supabase-js');
 const { pool } = require('../db');
 const { requireAuth } = require('../middleware/auth');
 const { sendPushToAllDevices } = require('../utils/sendPush');
+const { asyncHandler } = require('../utils/asyncHandler');
 
 const router = express.Router();
 
@@ -46,7 +47,7 @@ async function uploadBrochure(file) {
 }
 
 // --- LOGIN ---
-router.post('/login', async (req, res) => {
+router.post('/login', asyncHandler(async (req, res) => {
   const { username, password } = req.body;
   const { rows } = await pool.query('SELECT * FROM admins WHERE username = $1', [username]);
   const admin = rows[0];
@@ -59,16 +60,16 @@ router.post('/login', async (req, res) => {
     expiresIn: '7d',
   });
   res.json({ token, username: admin.username });
-});
+}));
 
 // Everything below this line requires a valid login token
 router.use(requireAuth);
 
 // GET all events (admin dashboard table)
-router.get('/events', async (req, res) => {
+router.get('/events', asyncHandler(async (req, res) => {
   const { rows } = await pool.query('SELECT * FROM events ORDER BY date DESC, time ASC');
   res.json(rows);
-});
+}));
 
 // CREATE event
 router.post('/events', upload.single('brochure'), async (req, res) => {
@@ -141,12 +142,12 @@ router.put('/events/:id', upload.single('brochure'), async (req, res) => {
 });
 
 // DELETE event
-router.delete('/events/:id', async (req, res) => {
+router.delete('/events/:id', asyncHandler(async (req, res) => {
   const { rows } = await pool.query('SELECT * FROM events WHERE id = $1', [req.params.id]);
   if (!rows[0]) return res.status(404).json({ error: 'Event not found' });
 
   await pool.query('DELETE FROM events WHERE id = $1', [req.params.id]);
   res.json({ success: true });
-});
+}));
 
 module.exports = router;

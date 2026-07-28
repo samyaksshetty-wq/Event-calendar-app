@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, createNavigationContainerRef } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import CalendarScreen from '../screens/CalendarScreen';
@@ -10,6 +10,10 @@ import SavedEventsScreen from '../screens/SavedEventsScreen';
 import { COLORS } from '../theme';
 
 const Stack = createNativeStackNavigator();
+
+// Lets code outside the navigation tree (e.g. a notification-tap handler)
+// navigate imperatively once the container has mounted.
+export const navigationRef = createNavigationContainerRef();
 
 // Maps the custom URL scheme to screens. This is what makes the app open
 // directly to a specific event when someone taps a shared link (via the
@@ -29,7 +33,7 @@ const linking = {
 
 export default function AppNavigator() {
   return (
-    <NavigationContainer linking={linking}>
+    <NavigationContainer ref={navigationRef} linking={linking}>
       <Stack.Navigator
         screenOptions={{
           headerStyle: { backgroundColor: COLORS.bg },
