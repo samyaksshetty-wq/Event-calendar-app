@@ -8,6 +8,7 @@ const eventsRouter = require('./routes/events');
 const adminRouter = require('./routes/admin');
 const pushRouter = require('./routes/push');
 const shareRouter = require('./routes/share');
+const maintenanceRouter = require('./routes/maintenance');
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.use('/api/events', eventsRouter);   // public, used by the mobile app
 app.use('/api/admin', adminRouter);     // protected, used by the admin panel
 app.use('/api/push', pushRouter);       // public register + secret-protected send-today
 app.use('/e', shareRouter);             // public share-link landing page (opens app or store)
+app.use('/api/maintenance', maintenanceRouter); // secret-protected, used by an external daily cron
 
 app.get('/', (req, res) => {
   res.send('Event Calendar API is running. Admin panel is at /admin');
