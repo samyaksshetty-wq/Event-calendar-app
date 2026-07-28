@@ -9,6 +9,11 @@ import { getInterstitialAdUnitId } from '../ads/adUnitIds';
 export function useInterstitialAd() {
   const adRef = useRef(null);
   const loadedRef = useRef(false);
+  // The ad load is a network call that's frequently slower than the screen's
+  // own data fetch, so show() is often called before LOADED has fired. This
+  // flag remembers that a show was requested so it can fire the moment the
+  // ad actually becomes ready, instead of silently doing nothing.
+  const pendingShowRef = useRef(false);
 
   useEffect(() => {
     const ad = InterstitialAd.createForAdRequest(getInterstitialAdUnitId());
@@ -16,10 +21,15 @@ export function useInterstitialAd() {
 
     const unsubLoaded = ad.addAdEventListener(AdEventType.LOADED, () => {
       loadedRef.current = true;
+      if (pendingShowRef.current) {
+        pendingShowRef.current = false;
+        ad.show();
+      }
     });
     const unsubError = ad.addAdEventListener(AdEventType.ERROR, (err) => {
       console.log('Interstitial ad failed to load', err);
       loadedRef.current = false;
+      pendingShowRef.current = false;
     });
     const unsubClosed = ad.addAdEventListener(AdEventType.CLOSED, () => {
       loadedRef.current = false;
@@ -39,6 +49,8 @@ export function useInterstitialAd() {
   const show = useCallback(() => {
     if (adRef.current && loadedRef.current) {
       adRef.current.show();
+    } else {
+      pendingShowRef.current = true;
     }
   }, []);
 

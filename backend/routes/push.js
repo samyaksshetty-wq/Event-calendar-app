@@ -71,7 +71,6 @@ router.post('/send-today', async (req, res) => {
   }
 
   res.json({ sent: true, eventCount: events.length, deviceCount: tokens.length, expoResults });
-  res.json({ sent: true, eventCount: events.length, deviceCount: tokens.length });
 });
 
 module.exports = router;

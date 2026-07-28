@@ -210,6 +210,8 @@ export default function EventDetailScreen({ route }) {
         </FadeSlideIn>
       </ScrollView>
 
+      <AdMobBanner />
+
       {/* Full-screen in-app brochure viewer - no external app/browser involved */}
       <Modal
         visible={brochureVisible}

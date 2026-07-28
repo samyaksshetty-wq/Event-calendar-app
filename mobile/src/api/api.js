@@ -46,20 +46,11 @@ export function getUpcomingEvents(limit = 5) {
   return api.get('/api/events/upcoming', { params: { limit } }).then((r) => r.data);
 }
 
-// Returns the currently active ad for a placement, or null if none is scheduled.
-// Fails silently (returns null) so an ad-fetch problem never breaks the app.
 // Registers this device's push token with the backend so it can receive
 // "events today" notifications. Fails silently - notifications are a nice
 // extra, never something that should block or crash the app.
 export function registerPushToken(token) {
   return api.post('/api/push/register', { token }).catch(() => {});
-}
-
-export function getActiveAd(placement) {
-  return api
-    .get(`/api/ads/${placement}`)
-    .then((r) => r.data)
-    .catch(() => null);
 }
 
 export function brochureFullUrl(brochure_url) {

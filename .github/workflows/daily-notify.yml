@@ -1,8 +1,11 @@
 name: Send daily event notifications
 
 on:
-  schedule:
-    - cron: '30 5 * * *'
+  # NOTE: GitHub Actions' schedule trigger is best-effort and can be delayed by
+  # hours on low-traffic repos (confirmed: this drifted from ~10am to ~6pm UAE
+  # over a week). The real daily 9am UAE trigger now comes from an external
+  # cron-ping service (e.g. cron-job.org) hitting /api/push/send-today
+  # directly. This workflow is kept only for manual runs via workflow_dispatch.
   workflow_dispatch: {}
 
 jobs:

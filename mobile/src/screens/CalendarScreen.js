@@ -114,7 +114,7 @@ export default function CalendarScreen({ navigation }) {
           <FadeSlideIn style={[styles.headerBlock, { flex: 1 }]}>
             <Text style={styles.eyebrow}>WHAT'S ON</Text>
             <Text style={styles.header}>
-              <Text style={{ color: COLORS.brandYellow | '#F5C518'}}>Namma</Text>
+              <Text style={{ color: COLORS.brandYellow || '#F5C518'}}>Namma</Text>
               <Text style={{ color: COLORS.brandRed }}> Events</Text>
             </Text>
             <Text style={styles.description}>
@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
     marginBottom: 6,
   },
-  header: { fontSize: 28, fontWeight: '800', color: COLORS.brandRed, letterSpacing: -0.5 },
+  header: { fontSize: 28, fontWeight: '800', letterSpacing: -0.5 },
   description: { fontSize: 14, color: COLORS.muted, marginTop: 8, lineHeight: 20 },
 
   actionRow: { flexDirection: 'row', gap: 10, marginBottom: SPACING.lg },
