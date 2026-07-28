@@ -49,14 +49,14 @@ export default function AnnouncementStrip({ text, style }) {
 const styles = StyleSheet.create({
   strip: {
     height: 36,
-    backgroundColor: COLORS.brandRed,
+    backgroundColor: '#F5C518',
     overflow: 'hidden',
     justifyContent: 'center',
   },
   text: {
     position: 'absolute',
-    color: '#fff',
+    color: COLORS.ink,
     fontWeight: '700',
-    fontSize: 14,
+    fontSize: 16,
   },
 });

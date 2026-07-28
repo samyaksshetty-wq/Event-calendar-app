@@ -21,6 +21,7 @@ import AnimatedPressable from '../components/AnimatedPressable';
 import { useFavorite } from '../favorites/useFavorites';
 import { getRelativeDayLabel } from '../utils/dateHelpers';
 import AdMobBanner from '../components/AdMobBanner';
+import LinkifiedText from '../components/LinkifiedText';
 import { useInterstitialAd } from '../ads/useInterstitialAd';
 
 function formatDateWithDay(dateString) {
@@ -166,7 +167,7 @@ export default function EventDetailScreen({ route }) {
           {!!event.description && (
             <View style={styles.section}>
               <Text style={styles.sectionLabel}>Description:</Text>
-              <Text style={styles.description}>{event.description}</Text>
+              <LinkifiedText style={styles.description} text={event.description} />
             </View>
           )}
 
