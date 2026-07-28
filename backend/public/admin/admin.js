@@ -63,6 +63,7 @@ function showDashboard() {
   loginView.classList.add('hidden');
   dashboardView.classList.remove('hidden');
   loadEvents();
+  loadAnnouncement();
 }
 
 function showLogin() {
@@ -100,6 +101,42 @@ document.getElementById('logout-btn').addEventListener('click', () => {
   token = null;
   localStorage.removeItem('admin_token');
   showLogin();
+});
+
+// ---- ANNOUNCEMENT STRIP ----
+const announcementForm = document.getElementById('announcement-form');
+const announcementText = document.getElementById('announcement-text');
+const announcementError = document.getElementById('announcement-error');
+
+async function loadAnnouncement() {
+  const res = await fetch(`${API}/api/announcement`);
+  const data = await res.json();
+  announcementText.value = data.text || '';
+}
+
+async function saveAnnouncement(text) {
+  announcementError.textContent = '';
+  try {
+    const res = await fetch(`${API}/api/admin/announcement`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ text }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Something went wrong');
+    announcementText.value = data.text || '';
+  } catch (err) {
+    announcementError.textContent = err.message;
+  }
+}
+
+announcementForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  saveAnnouncement(announcementText.value);
+});
+
+document.getElementById('clear-announcement').addEventListener('click', () => {
+  saveAnnouncement('');
 });
 
 // ---- LOAD EVENTS TABLE ----

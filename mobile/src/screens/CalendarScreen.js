@@ -7,12 +7,14 @@ import {
   ScrollView,
 } from 'react-native';
 import { Calendar } from 'react-native-calendars';
-import { getEventDatesForMonth, getEventsForDate } from '../api/api';
+import { useFocusEffect } from '@react-navigation/native';
+import { getEventDatesForMonth, getEventsForDate, getAnnouncement } from '../api/api';
 import { COLORS, RADIUS, SPACING } from '../theme';
 import FadeSlideIn from '../components/FadeSlideIn';
 import AnimatedPressable from '../components/AnimatedPressable';
 import BackgroundDecoration from '../components/BackgroundDecoration';
 import AdMobBanner from '../components/AdMobBanner';
+import AnnouncementStrip from '../components/AnnouncementStrip';
 import CountdownBadge from '../components/CountdownBadge';
 import { useFavorite } from '../favorites/useFavorites';
 
@@ -65,6 +67,15 @@ export default function CalendarScreen({ navigation }) {
   const [selectedDate, setSelectedDate] = useState(null);
   const [dayEvents, setDayEvents] = useState([]);
   const [dayLoading, setDayLoading] = useState(false);
+  const [announcement, setAnnouncement] = useState(null);
+
+  // Re-fetch each time this screen comes into focus, so an announcement the
+  // admin just added or cleared shows up without needing to reopen the app.
+  useFocusEffect(
+    useCallback(() => {
+      getAnnouncement().then(setAnnouncement);
+    }, [])
+  );
 
   const loadMonth = useCallback(async (year, month) => {
     setMonthLoading(true);
@@ -142,6 +153,8 @@ export default function CalendarScreen({ navigation }) {
         </AnimatedPressable>
       </FadeSlideIn>
 
+      <AnnouncementStrip text={announcement} style={styles.announcementStrip} />
+
       <FadeSlideIn delay={170} style={styles.calendarCard}>
         <Calendar
           current={today.toISOString().split('T')[0]}
@@ -208,6 +221,10 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: COLORS.bg },
   container: { flex: 1, backgroundColor: 'transparent' },
   scrollContent: { paddingTop: 60, paddingHorizontal: SPACING.md, paddingBottom: 48 },
+
+  // Cancels out scrollContent's horizontal padding so the strip bleeds
+  // edge-to-edge instead of sitting inside the screen's card margins.
+  announcementStrip: { marginHorizontal: -SPACING.md, marginBottom: SPACING.lg },
 
   headerRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: SPACING.lg },
   headerBlock: {},

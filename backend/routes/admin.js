@@ -65,6 +65,16 @@ router.post('/login', asyncHandler(async (req, res) => {
 // Everything below this line requires a valid login token
 router.use(requireAuth);
 
+// PUT the announcement strip's text. An empty/blank string hides the strip.
+router.put('/announcement', asyncHandler(async (req, res) => {
+  const text = (req.body.text || '').trim() || null;
+  await pool.query(
+    'UPDATE announcement SET text = $1, updated_at = now() WHERE id = 1',
+    [text]
+  );
+  res.json({ text });
+}));
+
 // GET all events (admin dashboard table)
 router.get('/events', asyncHandler(async (req, res) => {
   const { rows } = await pool.query('SELECT * FROM events ORDER BY date DESC, time ASC');

@@ -28,6 +28,20 @@
 
     <main>
       <section class="card">
+        <h2>Announcement Strip</h2>
+        <p class="hint">Shown as a scrolling red strip on the Calendar screen, above the calendar. Leave blank and save to hide it.</p>
+        <form id="announcement-form">
+          <label>Text</label>
+          <input type="text" id="announcement-text" placeholder="e.g. Happy Diwali from Namma Events! 🪔" />
+          <div class="form-actions">
+            <button type="submit">Save</button>
+            <button type="button" id="clear-announcement" class="secondary">Clear</button>
+          </div>
+          <p id="announcement-error" class="error"></p>
+        </form>
+      </section>
+
+      <section class="card">
         <h2 id="form-title">Add New Event</h2>
         <form id="event-form">
           <input type="hidden" id="event-id" />

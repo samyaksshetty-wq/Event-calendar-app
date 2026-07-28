@@ -46,6 +46,16 @@ export function getUpcomingEvents(limit = 5) {
   return api.get('/api/events/upcoming', { params: { limit } }).then((r) => r.data);
 }
 
+// Returns the current announcement strip text, or null if there's nothing
+// to show. Fails silently - it's a nice-to-have, never worth breaking the
+// Calendar screen over.
+export function getAnnouncement() {
+  return api
+    .get('/api/announcement')
+    .then((r) => r.data.text)
+    .catch(() => null);
+}
+
 // Registers this device's push token with the backend so it can receive
 // "events today" notifications. Fails silently - notifications are a nice
 // extra, never something that should block or crash the app.

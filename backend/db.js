@@ -52,6 +52,18 @@ async function initDb() {
       created_at TIMESTAMPTZ DEFAULT now()
     );
   `);
+
+  // Single-row table backing the scrolling announcement strip on the
+  // Calendar screen (festival wishes, cancellation notices, etc). Empty/null
+  // text means the strip is hidden.
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS announcement (
+      id INTEGER PRIMARY KEY DEFAULT 1,
+      text TEXT,
+      updated_at TIMESTAMPTZ DEFAULT now()
+    );
+  `);
+  await pool.query(`INSERT INTO announcement (id, text) VALUES (1, NULL) ON CONFLICT (id) DO NOTHING;`);
 }
 
 module.exports = { pool, initDb };
