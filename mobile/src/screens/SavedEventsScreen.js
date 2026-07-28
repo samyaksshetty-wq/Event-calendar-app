@@ -5,6 +5,7 @@ import { COLORS, RADIUS, SPACING } from '../theme';
 import FadeSlideIn from '../components/FadeSlideIn';
 import AnimatedPressable from '../components/AnimatedPressable';
 import BackgroundDecoration from '../components/BackgroundDecoration';
+import AdMobBanner from '../components/AdMobBanner';
 import CountdownBadge from '../components/CountdownBadge';
 import { useFavoriteIds } from '../favorites/useFavorites';
 import { toggleFavorite } from '../favorites/favoritesStore';
@@ -33,53 +34,58 @@ export default function SavedEventsScreen({ navigation }) {
   }, [favoriteIds.size, [...favoriteIds].join(',')]);
 
   return (
-    <View style={styles.container}>
+    <View style={styles.screen}>
       <BackgroundDecoration />
 
-      {loading && <ActivityIndicator style={{ marginTop: 24 }} color={COLORS.accent} />}
+      <View style={styles.container}>
+        {loading && <ActivityIndicator style={{ marginTop: 24 }} color={COLORS.accent} />}
 
-      {!loading && events.length === 0 && (
-        <FadeSlideIn>
-          <Text style={styles.emptyTitle}>No saved events yet</Text>
-          <Text style={styles.emptyText}>
-            Tap the 🤍 on any event to save it here for quick access later.
-          </Text>
-        </FadeSlideIn>
-      )}
+        {!loading && events.length === 0 && (
+          <FadeSlideIn>
+            <Text style={styles.emptyTitle}>No saved events yet</Text>
+            <Text style={styles.emptyText}>
+              Tap the 🤍 on any event to save it here for quick access later.
+            </Text>
+          </FadeSlideIn>
+        )}
 
-      {!loading && events.length > 0 && (
-        <ScrollView contentContainerStyle={styles.list}>
-          {events.map((ev, index) => (
-            <FadeSlideIn key={ev.id} delay={index * 60}>
-              <AnimatedPressable
-                style={styles.card}
-                onPress={() => navigation.navigate('EventDetail', { id: ev.id })}
-                scaleTo={0.985}
-              >
-                <View style={styles.cardTopRow}>
-                  <CountdownBadge date={ev.date} />
-                  <AnimatedPressable
-                    onPress={() => toggleFavorite(ev.id)}
-                    scaleTo={0.85}
-                    style={styles.heartButton}
-                  >
-                    <Text style={styles.heart}>❤️</Text>
-                  </AnimatedPressable>
-                </View>
-                <Text style={styles.title}>{ev.title}</Text>
-                <Text style={styles.meta}>📅 {ev.date}{ev.time ? `  •  🕒 ${ev.time}` : ''}</Text>
-                {!!ev.venue && <Text style={styles.meta}>📍 {ev.venue}</Text>}
-              </AnimatedPressable>
-            </FadeSlideIn>
-          ))}
-        </ScrollView>
-      )}
+        {!loading && events.length > 0 && (
+          <ScrollView contentContainerStyle={styles.list}>
+            {events.map((ev, index) => (
+              <FadeSlideIn key={ev.id} delay={index * 60}>
+                <AnimatedPressable
+                  style={styles.card}
+                  onPress={() => navigation.navigate('EventDetail', { id: ev.id })}
+                  scaleTo={0.985}
+                >
+                  <View style={styles.cardTopRow}>
+                    <CountdownBadge date={ev.date} />
+                    <AnimatedPressable
+                      onPress={() => toggleFavorite(ev.id)}
+                      scaleTo={0.85}
+                      style={styles.heartButton}
+                    >
+                      <Text style={styles.heart}>❤️</Text>
+                    </AnimatedPressable>
+                  </View>
+                  <Text style={styles.title}>{ev.title}</Text>
+                  <Text style={styles.meta}>📅 {ev.date}{ev.time ? `  •  🕒 ${ev.time}` : ''}</Text>
+                  {!!ev.venue && <Text style={styles.meta}>📍 {ev.venue}</Text>}
+                </AnimatedPressable>
+              </FadeSlideIn>
+            ))}
+          </ScrollView>
+        )}
+      </View>
+
+      <AdMobBanner />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.bg, padding: SPACING.md },
+  screen: { flex: 1, backgroundColor: COLORS.bg },
+  container: { flex: 1, padding: SPACING.md },
   emptyTitle: { fontSize: 17, fontWeight: '700', color: COLORS.ink, marginTop: 24, textAlign: 'center' },
   emptyText: { fontSize: 14, color: COLORS.muted, marginTop: 8, textAlign: 'center', paddingHorizontal: 24 },
   list: { paddingBottom: 40 },

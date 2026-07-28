@@ -63,6 +63,7 @@ export default function EventDetailScreen({ route }) {
   const { id } = route.params;
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [adResolved, setAdResolved] = useState(false);
   const [brochureVisible, setBrochureVisible] = useState(false);
   const [isFavorite, toggleFavorite] = useFavorite(id);
   const showInterstitial = useInterstitialAd();
@@ -74,16 +75,18 @@ export default function EventDetailScreen({ route }) {
       .finally(() => setLoading(false));
   }, [id]);
 
-  // Show the interstitial once the event has loaded. If the ad isn't ready
-  // yet, showInterstitial() just does nothing - it never blocks the screen.
+  // Show the interstitial once the event has loaded, and keep the content
+  // below hidden until it's actually been shown and closed (or it's clear no
+  // ad is coming) - otherwise the event details flash on screen for a moment
+  // before the ad appears on top of them.
   useEffect(() => {
     if (!loading) {
-      showInterstitial();
+      showInterstitial(() => setAdResolved(true));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading]);
 
-  if (loading) {
+  if (loading || !adResolved) {
     return (
       <View style={styles.centered}>
         <ActivityIndicator color={COLORS.accent} />

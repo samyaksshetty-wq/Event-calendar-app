@@ -6,6 +6,7 @@ import { COLORS, RADIUS, SPACING } from '../theme';
 import FadeSlideIn from '../components/FadeSlideIn';
 import AnimatedPressable from '../components/AnimatedPressable';
 import BackgroundDecoration from '../components/BackgroundDecoration';
+import AdMobBanner from '../components/AdMobBanner';
 import CountdownBadge from '../components/CountdownBadge';
 import { useFavorite } from '../favorites/useFavorites';
 
@@ -112,9 +113,10 @@ export default function SearchScreen({ navigation }) {
   const showSuggestions = !searched;
 
   return (
-    <View style={styles.container}>
+    <View style={styles.screen}>
       <BackgroundDecoration />
 
+      <View style={styles.container}>
       <FadeSlideIn>
         <TextInput
           style={styles.input}
@@ -219,12 +221,16 @@ export default function SearchScreen({ navigation }) {
           }
         />
       )}
+      </View>
+
+      <AdMobBanner />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.bg, padding: SPACING.md },
+  screen: { flex: 1, backgroundColor: COLORS.bg },
+  container: { flex: 1, padding: SPACING.md },
   input: {
     backgroundColor: COLORS.surface,
     borderWidth: 1,
