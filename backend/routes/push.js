@@ -1,6 +1,7 @@
 const express = require('express');
 const { pool } = require('../db');
 const { asyncHandler } = require('../utils/asyncHandler');
+const { sendPushToAllDevices } = require('../utils/sendPush');
 
 const router = express.Router();
 
@@ -36,11 +37,6 @@ router.post('/send-today', asyncHandler(async (req, res) => {
     return res.json({ sent: false, reason: 'No events today' });
   }
 
-  const { rows: tokens } = await pool.query('SELECT token FROM push_tokens');
-  if (tokens.length === 0) {
-    return res.json({ sent: false, reason: 'No registered devices' });
-  }
-
   const title = events.length === 1 ? "Today's Event" : `${events.length} Events Today`;
   const body =
     events.length === 1
@@ -50,28 +46,8 @@ router.post('/send-today', asyncHandler(async (req, res) => {
           .map((e) => e.title)
           .join(', ') + (events.length > 3 ? '...' : '');
 
-  const messages = tokens.map((t) => ({
-    to: t.token,
-    sound: 'default',
-    title,
-    body,
-    data: { type: 'today_events' },
-  }));
-
-  const chunks = [];
-  for (let i = 0; i < messages.length; i += 100) chunks.push(messages.slice(i, i + 100));
-
-  const expoResults = [];
-  for (const chunk of chunks) {
-    const expoRes = await fetch('https://exp.host/--/api/v2/push/send', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify(chunk),
-    });
-    expoResults.push(await expoRes.json());
-  }
-
-  res.json({ sent: true, eventCount: events.length, deviceCount: tokens.length, expoResults });
+  const result = await sendPushToAllDevices(pool, { title, body, data: { type: 'today_events' } });
+  res.json({ eventCount: events.length, ...result });
 }));
 
 module.exports = router;

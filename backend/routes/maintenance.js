@@ -44,7 +44,7 @@ router.post('/cleanup-past-events', asyncHandler(async (req, res) => {
 
   await pool.query('DELETE FROM events WHERE date < $1', [todayUAE]);
 
-  res.json({ deleted: pastEvents.length, eventIds: pastEvents.map((e) => e.id) });
+  res.json({ deleted: pastEvents.length });
 }));
 
 module.exports = router;
