@@ -14,12 +14,16 @@ const USE_TEST_ADS = true;
 
 const PRODUCTION_UNITS = {
   banner: {
-    android: 'ca-app-pub-6853506192111873/6001085495',
+    android: 'ca-app-pub-REPLACE_WITH_YOUR_ID/REPLACE_WITH_BANNER_UNIT',
     ios: 'ca-app-pub-REPLACE_WITH_YOUR_ID/REPLACE_WITH_BANNER_UNIT',
   },
   interstitial: {
-    android: 'ca-app-pub-6853506192111873/3183350467',
+    android: 'ca-app-pub-REPLACE_WITH_YOUR_ID/REPLACE_WITH_INTERSTITIAL_UNIT',
     ios: 'ca-app-pub-REPLACE_WITH_YOUR_ID/REPLACE_WITH_INTERSTITIAL_UNIT',
+  },
+  appOpen: {
+    android: 'ca-app-pub-REPLACE_WITH_YOUR_ID/REPLACE_WITH_APP_OPEN_UNIT',
+    ios: 'ca-app-pub-REPLACE_WITH_YOUR_ID/REPLACE_WITH_APP_OPEN_UNIT',
   },
 };
 
@@ -31,4 +35,9 @@ export function getBannerAdUnitId() {
 export function getInterstitialAdUnitId() {
   if (USE_TEST_ADS) return TestIds.INTERSTITIAL;
   return Platform.OS === 'ios' ? PRODUCTION_UNITS.interstitial.ios : PRODUCTION_UNITS.interstitial.android;
+}
+
+export function getAppOpenAdUnitId() {
+  if (USE_TEST_ADS) return TestIds.APP_OPEN;
+  return Platform.OS === 'ios' ? PRODUCTION_UNITS.appOpen.ios : PRODUCTION_UNITS.appOpen.android;
 }

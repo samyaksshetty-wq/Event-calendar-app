@@ -6,6 +6,7 @@ import { COLORS } from './src/theme';
 import { registerForPushNotifications } from './src/notifications/registerForPush';
 import { setupNotificationTapHandling } from './src/notifications/handleNotificationTap';
 import { requestTrackingPermission } from './src/ads/requestTracking';
+import { useAppOpenAd } from './src/ads/useAppOpenAd';
 
 const LYRIC_LINE_1 = ['ಜಯ', 'ಭಾರತ', 'ಜನನಿಯ', 'ತನುಜಾತೆ,'];
 const LYRIC_LINE_2 = ['ಜಯ', 'ಹೇ', 'ಕರ್ನಾಟಕ', 'ಮಾತೆ!'];
@@ -67,6 +68,8 @@ export default function App() {
   useEffect(() => {
     return setupNotificationTapHandling();
   }, []);
+
+  useAppOpenAd();
 
   return (
     <>
