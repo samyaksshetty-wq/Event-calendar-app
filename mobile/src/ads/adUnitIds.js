@@ -14,11 +14,11 @@ const USE_TEST_ADS = true;
 
 const PRODUCTION_UNITS = {
   banner: {
-    android: 'ca-app-pub-REPLACE_WITH_YOUR_ID/REPLACE_WITH_BANNER_UNIT',
+    android: 'ca-app-pub-6853506192111873/6001085495',
     ios: 'ca-app-pub-REPLACE_WITH_YOUR_ID/REPLACE_WITH_BANNER_UNIT',
   },
   interstitial: {
-    android: 'ca-app-pub-REPLACE_WITH_YOUR_ID/REPLACE_WITH_INTERSTITIAL_UNIT',
+    android: 'ca-app-pub-6853506192111873/3183350467',
     ios: 'ca-app-pub-REPLACE_WITH_YOUR_ID/REPLACE_WITH_INTERSTITIAL_UNIT',
   },
 };
