@@ -60,7 +60,7 @@ function TicketCard({ ev, delay, navigation }) {
   );
 }
 
-export default function CalendarScreen({ navigation }) {
+export default function CalendarScreen({ navigation, route }) {
   const [markedDates, setMarkedDates] = useState({});
   const [monthLoading, setMonthLoading] = useState(true);
 
@@ -107,6 +107,15 @@ export default function CalendarScreen({ navigation }) {
       .catch((err) => console.log('Failed to load day events', err.message))
       .finally(() => setDayLoading(false));
   }, []);
+
+  // Landing here from the "today's events" notification (multiple events, so
+  // no single one to jump straight into) - expand that date automatically,
+  // same as if the user had tapped it themselves.
+  useEffect(() => {
+    if (route?.params?.date) {
+      onDayPress({ dateString: route.params.date });
+    }
+  }, [route?.params?.date, onDayPress]);
 
   const displayMarks = { ...markedDates };
   if (selectedDate) {

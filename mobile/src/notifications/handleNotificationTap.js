@@ -4,11 +4,19 @@ import { navigationRef } from '../navigation/AppNavigator';
 const MAX_RETRIES = 20; // ~6s, covers the splash screen delay before AppNavigator mounts
 
 function navigateFromResponse(response, attempt = 0) {
-  const eventId = response?.notification?.request?.content?.data?.eventId;
-  if (!eventId) return; // e.g. the "today's events" digest has no single target
+  const data = response?.notification?.request?.content?.data;
+  const eventId = data?.eventId;
+  const date = data?.date;
+  if (!eventId && !date) return;
 
   if (navigationRef.isReady()) {
-    navigationRef.navigate('EventDetail', { id: eventId });
+    if (eventId) {
+      navigationRef.navigate('EventDetail', { id: eventId });
+    } else {
+      // Multiple events that day, so there's no single one to jump into -
+      // open the Calendar with that date already expanded instead.
+      navigationRef.navigate('Calendar', { date });
+    }
   } else if (attempt < MAX_RETRIES) {
     // The navigator may not be mounted yet (still on the splash screen) -
     // try again shortly once it is.

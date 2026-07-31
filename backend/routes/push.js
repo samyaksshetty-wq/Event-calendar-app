@@ -46,7 +46,15 @@ router.post('/send-today', asyncHandler(async (req, res) => {
           .map((e) => e.title)
           .join(', ') + (events.length > 3 ? '...' : '');
 
-  const result = await sendPushToAllDevices(pool, { title, body, data: { type: 'today_events' } });
+  // A single event today can be tapped straight into; multiple events have
+  // no one target, so the app falls back to opening the Calendar with this
+  // date already expanded.
+  const data =
+    events.length === 1
+      ? { type: 'today_events', eventId: events[0].id }
+      : { type: 'today_events', date: today };
+
+  const result = await sendPushToAllDevices(pool, { title, body, data });
   res.json({ eventCount: events.length, ...result });
 }));
 
