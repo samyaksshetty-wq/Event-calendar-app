@@ -105,12 +105,16 @@ router.post('/events', upload.single('brochure'), async (req, res) => {
     const newEvent = rows[0];
 
     // Notify everyone right away - best effort, fire-and-forget so a push
-    // hiccup never blocks or breaks the actual event creation.
-    sendPushToAllDevices(pool, {
-      title: 'New Event Added! 🎉',
-      body: newEvent.venue ? `${newEvent.title} at ${newEvent.venue}` : newEvent.title,
-      data: { type: 'new_event', eventId: newEvent.id },
-    }).catch((err) => console.error('New-event push failed:', err.message));
+    // hiccup never blocks or breaks the actual event creation. Festivals are
+    // announced via the daily "today" digest instead, on each day they're
+    // actually happening - not when they're first added.
+    if (newEvent.category !== 'Festivals') {
+      sendPushToAllDevices(pool, {
+        title: 'New Event Added! 🎉',
+        body: newEvent.venue ? `${newEvent.title} at ${newEvent.venue}` : newEvent.title,
+        data: { type: 'new_event', eventId: newEvent.id },
+      }).catch((err) => console.error('New-event push failed:', err.message));
+    }
 
     res.status(201).json(newEvent);
   } catch (err) {
