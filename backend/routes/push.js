@@ -19,12 +19,13 @@ router.post('/register', asyncHandler(async (req, res) => {
   res.json({ success: true });
 }));
 
-// POST /api/push/send-today - checks if there are events and/or festivals
-// happening today, and if so, pushes a notification to every registered
-// device. A multi-day festival triggers this on every day it's running, not
-// just the day it was created. Not meant to be called by the app itself - a
-// scheduled job triggers this once a day. Protected by a shared secret so it
-// can't be abused to spam your users.
+// POST /api/push/send-today - checks if there are events happening today
+// and/or festivals starting tomorrow, and if so, pushes a notification to
+// every registered device. Festivals are announced the day before they
+// start (not every day they run) so people can plan ahead, rather than
+// finding out only once it's already begun. Not meant to be called by the
+// app itself - a scheduled job triggers this once a day. Protected by a
+// shared secret so it can't be abused to spam your users.
 router.post('/send-today', asyncHandler(async (req, res) => {
   const secret = req.headers['x-notify-secret'];
   if (!secret || secret !== process.env.NOTIFY_SECRET) {
@@ -32,38 +33,42 @@ router.post('/send-today', asyncHandler(async (req, res) => {
   }
 
   const today = new Date().toISOString().split('T')[0];
+  const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
   const { rows: events } = await pool.query(
     `SELECT * FROM events WHERE date = $1 AND (category IS NULL OR category <> 'Festivals')`,
     [today]
   );
   const { rows: festivals } = await pool.query(
-    `SELECT * FROM events WHERE category = 'Festivals' AND date <= $1 AND COALESCE(date_end, date) >= $1`,
-    [today]
+    `SELECT * FROM events WHERE category = 'Festivals' AND date = $1`,
+    [tomorrow]
   );
 
   if (events.length === 0 && festivals.length === 0) {
-    return res.json({ sent: false, reason: 'Nothing happening today' });
+    return res.json({ sent: false, reason: 'Nothing to announce today' });
   }
 
   let title;
   if (festivals.length === 0) {
     title = events.length === 1 ? "Today's Event" : `${events.length} Events Today`;
   } else if (events.length === 0) {
-    title = festivals.length === 1 ? "Today's Festival" : `${festivals.length} Festivals Today`;
+    title = festivals.length === 1 ? 'Festival Tomorrow! 🎉' : `${festivals.length} Festivals Tomorrow! 🎉`;
   } else {
     const eventPart = events.length === 1 ? '1 event' : `${events.length} events`;
     const festivalPart = festivals.length === 1 ? 'a festival' : `${festivals.length} festivals`;
-    title = `You have ${eventPart} today and ${festivalPart}`;
+    title = `You have ${eventPart} today, and ${festivalPart} tomorrow`;
   }
 
   const allTitles = [...events.map((e) => e.title), ...festivals.map((f) => f.title)];
   const body = allTitles.length <= 3 ? allTitles.join(', ') : `${allTitles.slice(0, 3).join(', ')}...`;
 
-  // A single item today (one event, or one festival) can be tapped straight
-  // into; anything more has no one target, so the app falls back to opening
-  // the Calendar with this date already expanded.
+  // A single item (one event today, or one festival tomorrow) can be tapped
+  // straight into; anything more has no one target, so the app falls back
+  // to opening the Calendar on whichever date is actually more relevant -
+  // today if there are events today, otherwise tomorrow for the festival(s).
   const only = events.length + festivals.length === 1 ? (events[0] || festivals[0]) : null;
-  const data = only ? { type: 'today_events', eventId: only.id } : { type: 'today_events', date: today };
+  const fallbackDate = events.length > 0 ? today : tomorrow;
+  const data = only ? { type: 'today_events', eventId: only.id } : { type: 'today_events', date: fallbackDate };
 
   const result = await sendPushToAllDevices(pool, { title, body, data });
   res.json({ eventCount: events.length, festivalCount: festivals.length, ...result });
