@@ -227,7 +227,11 @@ export default function EventDetailScreen({ route }) {
         <SafeAreaView style={styles.modalContainer} edges={['top', 'bottom']}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Brochure</Text>
-            <Pressable onPress={() => setBrochureVisible(false)} style={styles.modalCloseButton}>
+            <Pressable
+              onPress={() => setBrochureVisible(false)}
+              style={styles.modalCloseButton}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            >
               <Text style={styles.modalCloseText}>Close ✕</Text>
             </Pressable>
           </View>
@@ -368,7 +372,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: SPACING.md,
-    paddingVertical: 12,
+    // SafeAreaView's automatic top inset isn't reliable inside a Modal on
+    // iOS (it presents as a separate view hierarchy), so this adds a fixed
+    // safety margin rather than depending on that detection - otherwise the
+    // close button ends up tucked under the notch/Dynamic Island.
+    paddingTop: Platform.OS === 'ios' ? 50 : 12,
+    paddingBottom: 12,
     backgroundColor: '#111',
   },
   modalTitle: { color: '#fff', fontSize: 16, fontWeight: '700' },
