@@ -13,7 +13,9 @@ export const API_BASE_URL = 'https://event-calendar-app-597h.onrender.com';
 
 const api = axios.create({ baseURL: 'https://event-calendar-app-597h.onrender.com' });
 
-// Returns date -> event count for a given month, for calendar dots
+// Returns { counts: { date: eventCount }, festivals: [{ id, title, date, date_end }] }
+// for a given month - counts back the dot markers, festivals back the
+// background-color range markers on the calendar.
 export function getEventDatesForMonth(year, month) {
   return api.get('/api/events/dates', { params: { year, month } }).then((r) => r.data);
 }

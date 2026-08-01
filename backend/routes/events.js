@@ -5,6 +5,10 @@ const { asyncHandler } = require('../utils/asyncHandler');
 const router = express.Router();
 
 // GET /api/events/dates?year=2026&month=7
+// Returns per-day event counts (for the dot markers) plus any festivals
+// whose date range overlaps this month (for the background-color range
+// markers) - a festival that started last month but continues into this
+// one still needs to be highlighted here.
 router.get('/dates', asyncHandler(async (req, res) => {
   const { year, month } = req.query;
   if (!year || !month) {
@@ -12,14 +16,27 @@ router.get('/dates', asyncHandler(async (req, res) => {
   }
   const prefix = `${year}-${String(month).padStart(2, '0')}%`;
 
-  const { rows } = await pool.query(
-    `SELECT date, COUNT(*)::int AS count FROM events WHERE date LIKE $1 GROUP BY date`,
+  const { rows: countRows } = await pool.query(
+    `SELECT date, COUNT(*)::int AS count FROM events
+     WHERE date LIKE $1 AND (category IS NULL OR category <> 'Festivals')
+     GROUP BY date`,
     [prefix]
   );
+  const counts = {};
+  countRows.forEach((r) => (counts[r.date] = r.count));
 
-  const result = {};
-  rows.forEach((r) => (result[r.date] = r.count));
-  res.json(result);
+  const monthNum = String(month).padStart(2, '0');
+  const monthStart = `${year}-${monthNum}-01`;
+  const lastDay = new Date(Number(year), Number(month), 0).getDate();
+  const monthEnd = `${year}-${monthNum}-${String(lastDay).padStart(2, '0')}`;
+
+  const { rows: festivals } = await pool.query(
+    `SELECT id, title, date, date_end FROM events
+     WHERE category = 'Festivals' AND date <= $2 AND COALESCE(date_end, date) >= $1`,
+    [monthStart, monthEnd]
+  );
+
+  res.json({ counts, festivals });
 }));
 
 // GET /api/events/search?q=music&category=Music
@@ -73,12 +90,19 @@ router.get('/upcoming', asyncHandler(async (req, res) => {
 }));
 
 // GET /api/events?date=2026-07-14
+// Matches events on this exact date, plus any multi-day festival whose
+// range spans it (even if it started on an earlier date).
 router.get('/', asyncHandler(async (req, res) => {
   const { date } = req.query;
   if (!date) {
     return res.status(400).json({ error: 'date is required, e.g. ?date=2026-07-14' });
   }
-  const { rows } = await pool.query('SELECT * FROM events WHERE date = $1 ORDER BY time ASC', [date]);
+  const { rows } = await pool.query(
+    `SELECT * FROM events
+     WHERE date = $1 OR (date_end IS NOT NULL AND $1 BETWEEN date AND date_end)
+     ORDER BY time ASC`,
+    [date]
+  );
   res.json(rows);
 }));
 

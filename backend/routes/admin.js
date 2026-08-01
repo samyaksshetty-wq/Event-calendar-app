@@ -84,18 +84,22 @@ router.get('/events', asyncHandler(async (req, res) => {
 // CREATE event
 router.post('/events', upload.single('brochure'), async (req, res) => {
   try {
-    const { title, description, date, time, venue, location, fees, category, organizer_name, organizer_contact } = req.body;
+    const { title, description, date, date_end, time, venue, location, fees, category, organizer_name, organizer_contact } = req.body;
     if (!title || !date) {
       return res.status(400).json({ error: 'Title and date are required' });
+    }
+    const dateEnd = (date_end || '').trim() || null;
+    if (dateEnd && dateEnd < date) {
+      return res.status(400).json({ error: 'End date cannot be before the start date' });
     }
 
     const id = uuidv4();
     const brochure_url = await uploadBrochure(req.file);
 
     const { rows } = await pool.query(
-      `INSERT INTO events (id, title, description, date, time, venue, location, fees, category, organizer_name, organizer_contact, brochure_url)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING *`,
-      [id, title, description || '', date, time || '', venue || '', location || '', fees || '', category || '', organizer_name || '', organizer_contact || '', brochure_url]
+      `INSERT INTO events (id, title, description, date, date_end, time, venue, location, fees, category, organizer_name, organizer_contact, brochure_url)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING *`,
+      [id, title, description || '', date, dateEnd, time || '', venue || '', location || '', fees || '', category || '', organizer_name || '', organizer_contact || '', brochure_url]
     );
 
     const newEvent = rows[0];
@@ -122,16 +126,22 @@ router.put('/events/:id', upload.single('brochure'), async (req, res) => {
     const existing = existingRows[0];
     if (!existing) return res.status(404).json({ error: 'Event not found' });
 
-    const { title, description, date, time, venue, location, fees, category, organizer_name, organizer_contact } = req.body;
+    const { title, description, date, date_end, time, venue, location, fees, category, organizer_name, organizer_contact } = req.body;
     const brochure_url = req.file ? await uploadBrochure(req.file) : existing.brochure_url;
+    const dateEnd = (date_end || '').trim() || null;
+    const effectiveDate = date || existing.date;
+    if (dateEnd && dateEnd < effectiveDate) {
+      return res.status(400).json({ error: 'End date cannot be before the start date' });
+    }
 
     const { rows } = await pool.query(
-      `UPDATE events SET title=$1, description=$2, date=$3, time=$4, venue=$5, location=$6, fees=$7,
-       category=$8, organizer_name=$9, organizer_contact=$10, brochure_url=$11 WHERE id=$12 RETURNING *`,
+      `UPDATE events SET title=$1, description=$2, date=$3, date_end=$4, time=$5, venue=$6, location=$7, fees=$8,
+       category=$9, organizer_name=$10, organizer_contact=$11, brochure_url=$12 WHERE id=$13 RETURNING *`,
       [
         title || existing.title,
         description ?? existing.description,
-        date || existing.date,
+        effectiveDate,
+        dateEnd,
         time ?? existing.time,
         venue ?? existing.venue,
         location ?? existing.location,

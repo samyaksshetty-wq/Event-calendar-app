@@ -181,6 +181,23 @@ function escapeHtml(str) {
 }
 
 // ---- ADD / EDIT FORM ----
+const categorySelect = document.getElementById('category');
+const dateEndGroup = document.getElementById('date-end-group');
+const dateEndInput = document.getElementById('date_end');
+
+function syncDateEndVisibility() {
+  const isFestival = categorySelect.value === 'Festivals';
+  dateEndGroup.classList.toggle('hidden', !isFestival);
+  if (!isFestival) dateEndInput.value = '';
+}
+
+categorySelect.addEventListener('change', syncDateEndVisibility);
+
+const dateInput = document.getElementById('date');
+dateInput.addEventListener('change', () => {
+  dateEndInput.min = dateInput.value;
+});
+
 function startEdit(ev) {
   document.getElementById('form-title').textContent = 'Edit Event';
   document.getElementById('event-id').value = ev.id;
@@ -195,6 +212,8 @@ function startEdit(ev) {
   document.getElementById('organizer_name').value = ev.organizer_name || '';
   document.getElementById('organizer_contact').value = ev.organizer_contact || '';
   currentBrochureEl.textContent = ev.brochure_url ? `Current brochure: ${ev.brochure_url} (upload a new file to replace it)` : '';
+  syncDateEndVisibility();
+  dateEndInput.value = ev.date_end || '';
   cancelEditBtn.classList.remove('hidden');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -208,6 +227,7 @@ function resetForm() {
   currentBrochureEl.textContent = '';
   cancelEditBtn.classList.add('hidden');
   formError.textContent = '';
+  syncDateEndVisibility();
 }
 
 eventForm.addEventListener('submit', async (e) => {
@@ -218,6 +238,7 @@ eventForm.addEventListener('submit', async (e) => {
   const formData = new FormData();
   formData.append('title', document.getElementById('title').value);
   formData.append('date', document.getElementById('date').value);
+  formData.append('date_end', dateEndInput.value);
   formData.append('time', document.getElementById('time').value);
   formData.append('venue', document.getElementById('venue').value);
   formData.append('location', document.getElementById('location').value);

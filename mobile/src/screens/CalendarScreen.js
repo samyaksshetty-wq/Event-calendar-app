@@ -23,10 +23,48 @@ function formatDateHeading(dateString) {
   return d.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
 }
 
+function formatFestivalRange(date, dateEnd) {
+  const start = new Date(date + 'T00:00:00');
+  const end = new Date(dateEnd + 'T00:00:00');
+  const startStr = start.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  const endStr = end.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  return `${startStr} – ${endStr}`;
+}
+
+// A banner-style card for festivals - deliberately not shaped like the
+// ticket cards below, since festivals aren't a single bookable event with
+// a venue/organizer, they're a celebratory date range.
+function FestivalCard({ ev, delay, navigation }) {
+  const isMultiDay = ev.date_end && ev.date_end !== ev.date;
+
+  return (
+    <FadeSlideIn delay={delay}>
+      <AnimatedPressable
+        style={styles.festivalCard}
+        onPress={() => navigation.navigate('EventDetail', { id: ev.id })}
+        scaleTo={0.985}
+      >
+        <Text style={styles.festivalIcon}>🎉</Text>
+        <Text style={styles.festivalLabel}>FESTIVAL</Text>
+        <Text style={styles.festivalTitle}>{ev.title}</Text>
+        {isMultiDay && (
+          <Text style={styles.festivalDates}>{formatFestivalRange(ev.date, ev.date_end)}</Text>
+        )}
+        <View style={styles.festivalDivider} />
+        <Text style={styles.festivalDetailsLink}>View more details  →</Text>
+      </AnimatedPressable>
+    </FadeSlideIn>
+  );
+}
+
 // A single ticket card, pulled out as its own component so useFavorite (a
 // hook) can be called once per event - hooks can't be called inside a .map().
 function TicketCard({ ev, delay, navigation }) {
   const [isFavorite, toggleFavorite] = useFavorite(ev.id);
+
+  if (ev.category === 'Festivals') {
+    return <FestivalCard ev={ev} delay={delay} navigation={navigation} />;
+  }
 
   return (
     <FadeSlideIn delay={delay}>
@@ -80,11 +118,40 @@ export default function CalendarScreen({ navigation, route }) {
   const loadMonth = useCallback(async (year, month) => {
     setMonthLoading(true);
     try {
-      const dateCounts = await getEventDatesForMonth(year, month);
+      const { counts, festivals } = await getEventDatesForMonth(year, month);
       const marks = {};
-      Object.keys(dateCounts).forEach((date) => {
-        marks[date] = { marked: true, dotColor: COLORS.gold };
+
+      Object.keys(counts).forEach((date) => {
+        marks[date] = { ...marks[date], marked: true, dotColor: COLORS.gold };
       });
+
+      // Paint every day in each festival's range with a background color
+      // (not just the start date), so a multi-day festival reads as one
+      // continuous highlighted block on the calendar.
+      festivals.forEach((f) => {
+        const end = f.date_end || f.date;
+        for (
+          let d = new Date(f.date + 'T00:00:00');
+          d <= new Date(end + 'T00:00:00');
+          d.setDate(d.getDate() + 1)
+        ) {
+          // toISOString() converts to UTC, which silently shifts the date
+          // back a day whenever the device's local timezone is ahead of
+          // UTC - format from the local getters instead to stay consistent
+          // with how `d` was incremented (also in local time).
+          const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+          marks[dateStr] = {
+            ...marks[dateStr],
+            // Soft background + colored text, same treatment as today's
+            // marker, rather than a solid attention-grabbing fill.
+            color: COLORS.festivalSoft,
+            textColor: COLORS.festival,
+            startingDay: dateStr === f.date,
+            endingDay: dateStr === end,
+          };
+        }
+      });
+
       setMarkedDates(marks);
     } catch (err) {
       console.log('Failed to load events for month', err.message);
@@ -117,12 +184,19 @@ export default function CalendarScreen({ navigation, route }) {
     }
   }, [route?.params?.date, onDayPress]);
 
+  // markingType="period" (needed for the festival range backgrounds below)
+  // doesn't support the classic selected/selectedColor fields, so the tapped
+  // date is highlighted the same way a festival is - a colored pill behind
+  // the number - just in the accent color instead, taking visual priority
+  // over any festival tint underneath.
   const displayMarks = { ...markedDates };
   if (selectedDate) {
     displayMarks[selectedDate] = {
       ...(displayMarks[selectedDate] || {}),
-      selected: true,
-      selectedColor: COLORS.accent,
+      color: COLORS.accent,
+      textColor: '#fff',
+      startingDay: true,
+      endingDay: true,
     };
   }
 
@@ -170,6 +244,7 @@ export default function CalendarScreen({ navigation, route }) {
           onMonthChange={(m) => loadMonth(m.year, m.month)}
           onDayPress={onDayPress}
           markedDates={displayMarks}
+          markingType="period"
           theme={{
             backgroundColor: COLORS.surface,
             calendarBackground: COLORS.surface,
@@ -198,6 +273,8 @@ export default function CalendarScreen({ navigation, route }) {
       <View style={styles.legendRow}>
         <View style={styles.legendDot} />
         <Text style={styles.legendText}>Dates with events</Text>
+        <View style={[styles.legendSwatch, { marginLeft: 14 }]} />
+        <Text style={styles.legendText}>Festivals</Text>
       </View>
 
       {selectedDate && (
@@ -307,6 +384,7 @@ const styles = StyleSheet.create({
 
   legendRow: { flexDirection: 'row', alignItems: 'center', marginTop: 10, marginLeft: 4 },
   legendDot: { width: 7, height: 7, borderRadius: 3.5, backgroundColor: COLORS.gold, marginRight: 6 },
+  legendSwatch: { width: 12, height: 12, borderRadius: 3, backgroundColor: COLORS.festival, marginRight: 6 },
   legendText: { fontSize: 12, color: COLORS.muted },
 
   dayResults: { marginTop: SPACING.lg },
@@ -347,6 +425,48 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
   },
+
+  // Deliberately a banner, not a ticket - centered, solid-color, no
+  // notch/cutout motif, so it reads as a distinct kind of card at a glance.
+  // The calendar's own festival marking stays soft (see loadMonth), but the
+  // card itself can be bolder since it's a one-off, not a repeated element.
+  festivalCard: {
+    backgroundColor: COLORS.festival,
+    borderRadius: RADIUS.lg,
+    padding: SPACING.lg,
+    marginBottom: SPACING.md,
+    alignItems: 'center',
+    shadowColor: COLORS.festival,
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 3,
+  },
+  festivalIcon: { fontSize: 26, marginBottom: 4 },
+  festivalLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: 'rgba(255,255,255,0.85)',
+    letterSpacing: 1.5,
+    marginBottom: 6,
+  },
+  festivalTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#fff',
+    textAlign: 'center',
+    marginBottom: 6,
+  },
+  festivalDates: { fontSize: 13, fontWeight: '600', color: 'rgba(255,255,255,0.9)' },
+  festivalDivider: {
+    borderTopWidth: 1,
+    borderStyle: 'dashed',
+    borderTopColor: 'rgba(255,255,255,0.4)',
+    alignSelf: 'stretch',
+    marginVertical: 14,
+  },
+  festivalDetailsLink: { color: '#fff', fontWeight: '700', fontSize: 13 },
+
   ticketTitle: { fontSize: 16, fontWeight: '700', color: COLORS.ink, marginBottom: 8 },
   ticketTopRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
   ticketHeartButton: { padding: 2 },

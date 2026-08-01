@@ -17,14 +17,17 @@ const MAX_RECENT = 5;
 // useFavorite (a hook) can be called once per event.
 function EventCard({ event, onPress }) {
   const [isFavorite, toggleFavorite] = useFavorite(event.id);
+  const isFestival = event.category === 'Festivals';
 
   return (
     <AnimatedPressable style={styles.card} onPress={onPress} scaleTo={0.985}>
       <View style={styles.cardTopRow}>
         <CountdownBadge date={event.date} />
-        <AnimatedPressable onPress={toggleFavorite} scaleTo={0.85} style={styles.heartButton}>
-          <Text style={styles.heart}>{isFavorite ? '❤️' : '🤍'}</Text>
-        </AnimatedPressable>
+        {!isFestival && (
+          <AnimatedPressable onPress={toggleFavorite} scaleTo={0.85} style={styles.heartButton}>
+            <Text style={styles.heart}>{isFavorite ? '❤️' : '🤍'}</Text>
+          </AnimatedPressable>
+        )}
       </View>
       <Text style={styles.title}>{event.title}</Text>
       <Text style={styles.meta}>📅 {event.date}{event.time ? `  •  🕒 ${event.time}` : ''}</Text>

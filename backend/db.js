@@ -39,6 +39,10 @@ async function initDb() {
   await pool.query(`ALTER TABLE events ADD COLUMN IF NOT EXISTS category TEXT;`);
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_events_category ON events(category);`);
 
+  // Multi-day festivals set this to the last day of the festival; every
+  // other event leaves it null and is treated as a single-day event.
+  await pool.query(`ALTER TABLE events ADD COLUMN IF NOT EXISTS date_end TEXT;`);
+
   await pool.query(`
     CREATE TABLE IF NOT EXISTS admins (
       id TEXT PRIMARY KEY,

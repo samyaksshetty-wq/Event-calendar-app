@@ -102,6 +102,9 @@ export default function EventDetailScreen({ route }) {
     );
   }
 
+  const isFestival = event.category === 'Festivals';
+  const isMultiDay = isFestival && event.date_end && event.date_end !== event.date;
+
   const brochureUrl = brochureFullUrl(event.brochure_url);
   const isImage = brochureUrl && /\.(jpg|jpeg|png|webp)$/i.test(brochureUrl);
   const isPdf = brochureUrl && /\.pdf$/i.test(brochureUrl);
@@ -137,13 +140,15 @@ export default function EventDetailScreen({ route }) {
                 <Text style={styles.categoryBadgeText}>{event.category}</Text>
               </View>
             )}
-            <AnimatedPressable
-              style={isFavorite ? styles.favoriteButtonActive : styles.favoriteButton}
-              onPress={toggleFavorite}
-              scaleTo={0.9}
-            >
-              <Text style={styles.favoriteButtonText}>{isFavorite ? '❤️ Saved' : '🤍 Save'}</Text>
-            </AnimatedPressable>
+            {!isFestival && (
+              <AnimatedPressable
+                style={isFavorite ? styles.favoriteButtonActive : styles.favoriteButton}
+                onPress={toggleFavorite}
+                scaleTo={0.9}
+              >
+                <Text style={styles.favoriteButtonText}>{isFavorite ? '❤️ Saved' : '🤍 Save'}</Text>
+              </AnimatedPressable>
+            )}
             <AnimatedPressable
               style={styles.shareButton}
               onPress={() => shareEvent(event)}
@@ -155,9 +160,11 @@ export default function EventDetailScreen({ route }) {
 
           <View style={styles.metaCard}>
             <Field
-              label="Date"
+              label={isMultiDay ? 'Dates' : 'Date'}
               value={
-                getRelativeDayLabel(event.date)
+                isMultiDay
+                  ? `${formatDateWithDay(event.date)}  –  ${formatDateWithDay(event.date_end)}`
+                  : getRelativeDayLabel(event.date)
                   ? `${formatDateWithDay(event.date)}  (${getRelativeDayLabel(event.date)})`
                   : formatDateWithDay(event.date)
               }

@@ -52,6 +52,12 @@
           <label>Date *</label>
           <input type="date" id="date" required />
 
+          <div id="date-end-group" class="hidden">
+            <label>End Date</label>
+            <input type="date" id="date_end" />
+            <p class="hint">Leave blank for a single-day festival, or set this for a multi-day one.</p>
+          </div>
+
           <label>Time</label>
           <input type="text" id="time" placeholder="e.g. 6:00 PM - 9:00 PM" />
 
@@ -77,6 +83,7 @@
             <option value="Business">Business</option>
             <option value="Workshop">Workshop</option>
             <option value="Sports">Sports</option>
+            <option value="Festivals">Festivals</option>
             <option value="Other">Other</option>
           </select>
 
