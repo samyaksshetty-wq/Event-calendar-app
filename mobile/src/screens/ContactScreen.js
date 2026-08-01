@@ -7,8 +7,7 @@ import AnimatedPressable from '../components/AnimatedPressable';
 import BackgroundDecoration from '../components/BackgroundDecoration';
 import AdMobBanner from '../components/AdMobBanner';
 
-// TODO: replace this with your real number before publishing the app.
-const CONTACT_PHONE = '+91 00000 00000';
+const CONTACT_PHONE = '+971 50 973 6263';
 
 export default function ContactScreen() {
   return (

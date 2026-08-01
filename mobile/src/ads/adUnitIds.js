@@ -14,16 +14,16 @@ const USE_TEST_ADS = true;
 
 const PRODUCTION_UNITS = {
   banner: {
-    android: 'ca-app-pub-REPLACE_WITH_YOUR_ID/REPLACE_WITH_BANNER_UNIT',
-    ios: 'ca-app-pub-REPLACE_WITH_YOUR_ID/REPLACE_WITH_BANNER_UNIT',
+    android: 'ca-app-pub-6853506192111873/6001085495',
+    ios: 'ca-app-pub-6853506192111873/8681988100',
   },
   interstitial: {
-    android: 'ca-app-pub-REPLACE_WITH_YOUR_ID/REPLACE_WITH_INTERSTITIAL_UNIT',
-    ios: 'ca-app-pub-REPLACE_WITH_YOUR_ID/REPLACE_WITH_INTERSTITIAL_UNIT',
+    android: 'ca-app-pub-6853506192111873/3183350467',
+    ios: 'ca-app-pub-6853506192111873/8075217519',
   },
   appOpen: {
-    android: 'ca-app-pub-REPLACE_WITH_YOUR_ID/REPLACE_WITH_APP_OPEN_UNIT',
-    ios: 'ca-app-pub-REPLACE_WITH_YOUR_ID/REPLACE_WITH_APP_OPEN_UNIT',
+    android: 'ca-app-pub-6853506192111873/8622012423',
+    ios: 'ca-app-pub-6853506192111873/2822890839',
   },
 };
 
