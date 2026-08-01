@@ -10,6 +10,7 @@ export const COLORS = {
   gold: '#D9A441',      // small highlight accent (today marker, dots)
   brand: '#2F6B3A',      // tree green from the Namma Events logo
   brandRed: '#C8102E',   // flag red from the Namma Events logo
+  brandYellow: '#F5C518',// flag yellow from the Namma Events logo
   danger: '#DC2626',
   festival: '#E8AC72',     // soft, muted saffron - festival date range highlight
   festivalSoft: '#FBEEDD', // light saffron fill for festival cards

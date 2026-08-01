@@ -121,11 +121,27 @@ export default function CalendarScreen({ navigation, route }) {
       const { counts, festivals } = await getEventDatesForMonth(year, month);
       const marks = {};
 
+      // Merges into any customStyles already on this date (rather than
+      // replacing them), so an event-ring and a festival tint can both
+      // apply to the same day without one wiping out the other.
+      const mergeCustomStyles = (date, container, text) => {
+        const existing = marks[date]?.customStyles || {};
+        marks[date] = {
+          ...marks[date],
+          customStyles: {
+            container: { ...existing.container, ...container },
+            text: { ...existing.text, ...text },
+          },
+        };
+      };
+
+      // An unfilled yellow ring around the date number - not a background
+      // fill - so it stays legible next to today/selected/festival colors.
       Object.keys(counts).forEach((date) => {
-        marks[date] = { ...marks[date], marked: true, dotColor: COLORS.gold };
+        mergeCustomStyles(date, { borderWidth: 2, borderColor: COLORS.brandYellow });
       });
 
-      // Paint every day in each festival's range with a background color
+      // Paint every day in each festival's range with a soft background
       // (not just the start date), so a multi-day festival reads as one
       // continuous highlighted block on the calendar.
       festivals.forEach((f) => {
@@ -140,15 +156,7 @@ export default function CalendarScreen({ navigation, route }) {
           // UTC - format from the local getters instead to stay consistent
           // with how `d` was incremented (also in local time).
           const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-          marks[dateStr] = {
-            ...marks[dateStr],
-            // Soft background + colored text, same treatment as today's
-            // marker, rather than a solid attention-grabbing fill.
-            color: COLORS.festivalSoft,
-            textColor: COLORS.festival,
-            startingDay: dateStr === f.date,
-            endingDay: dateStr === end,
-          };
+          mergeCustomStyles(dateStr, { backgroundColor: COLORS.festivalSoft }, { color: COLORS.ink });
         }
       });
 
@@ -184,19 +192,17 @@ export default function CalendarScreen({ navigation, route }) {
     }
   }, [route?.params?.date, onDayPress]);
 
-  // markingType="period" (needed for the festival range backgrounds below)
-  // doesn't support the classic selected/selectedColor fields, so the tapped
-  // date is highlighted the same way a festival is - a colored pill behind
-  // the number - just in the accent color instead, taking visual priority
-  // over any festival tint underneath.
+  // A full override rather than a merge, so the tapped date always reads
+  // clearly as "selected" - a solid accent circle - regardless of whether
+  // it also has an event ring or a festival tint underneath.
   const displayMarks = { ...markedDates };
   if (selectedDate) {
     displayMarks[selectedDate] = {
       ...(displayMarks[selectedDate] || {}),
-      color: COLORS.accent,
-      textColor: '#fff',
-      startingDay: true,
-      endingDay: true,
+      customStyles: {
+        container: { backgroundColor: COLORS.accent, borderWidth: 0 },
+        text: { color: '#fff' },
+      },
     };
   }
 
@@ -244,7 +250,7 @@ export default function CalendarScreen({ navigation, route }) {
           onMonthChange={(m) => loadMonth(m.year, m.month)}
           onDayPress={onDayPress}
           markedDates={displayMarks}
-          markingType="period"
+          markingType="custom"
           theme={{
             backgroundColor: COLORS.surface,
             calendarBackground: COLORS.surface,
@@ -256,8 +262,6 @@ export default function CalendarScreen({ navigation, route }) {
             selectedDayBackgroundColor: COLORS.accent,
             selectedDayTextColor: '#FFFFFF',
             arrowColor: COLORS.accent,
-            dotColor: COLORS.gold,
-            selectedDotColor: '#FFFFFF',
             monthTextColor: COLORS.ink,
             textMonthFontWeight: '800',
             textMonthFontSize: 17,
@@ -383,7 +387,14 @@ const styles = StyleSheet.create({
   },
 
   legendRow: { flexDirection: 'row', alignItems: 'center', marginTop: 10, marginLeft: 4 },
-  legendDot: { width: 7, height: 7, borderRadius: 3.5, backgroundColor: COLORS.gold, marginRight: 6 },
+  legendDot: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    borderWidth: 2,
+    borderColor: COLORS.brandYellow,
+    marginRight: 6,
+  },
   legendSwatch: { width: 12, height: 12, borderRadius: 3, backgroundColor: COLORS.festival, marginRight: 6 },
   legendText: { fontSize: 12, color: COLORS.muted },
 

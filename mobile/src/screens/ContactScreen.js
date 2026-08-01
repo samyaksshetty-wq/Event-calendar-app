@@ -18,9 +18,10 @@ export default function ContactScreen() {
       <FadeSlideIn>
         <Text style={styles.heading}>List Your Event</Text>
         <Text style={styles.body}>
-          Are you organizing an event and want it featured on the calendar? Reach out with
-          your event details — title, date, time, venue, a short description, and a
-          brochure (image or PDF) — and it'll be added for everyone to see.
+          Are you organizing an event and want it featured on the calendar? Contact us on
+          the number below and we'll send you a Google Form to fill in your event details —
+          title, date, time, venue, a short description, and a brochure.
+          Once you submit the form, your event will be added for everyone to see.
         </Text>
       </FadeSlideIn>
 
@@ -36,7 +37,7 @@ export default function ContactScreen() {
       </FadeSlideIn>
 
       <FadeSlideIn delay={160}>
-        <Text style={styles.footnote}>We usually add new events within a day of receiving your details.</Text>
+        <Text style={styles.footnote}>We usually add new events within a day of receiving your completed form.</Text>
       </FadeSlideIn>
 
       <FadeSlideIn delay={200}>
