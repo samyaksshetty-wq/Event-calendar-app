@@ -14,7 +14,7 @@
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.samyakshetty.nammaevents",
       "infoPlist": {
         "NSUserTrackingUsageDescription": "This identifier is used to show you relevant ads and support the app.",
@@ -57,7 +57,8 @@
             "targetSdkVersion": 36
           }
         }
-      ]
+      ],
+      "./plugins/withFmtCpp17Fix.js"
     ]
   }
 }

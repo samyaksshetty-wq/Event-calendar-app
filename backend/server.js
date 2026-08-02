@@ -23,6 +23,9 @@ app.use('/admin', express.static(path.join(__dirname, 'public', 'admin')));
 // Public privacy policy page, required by the App Store / Play Store listings
 app.use('/privacy', express.static(path.join(__dirname, 'public', 'privacy')));
 
+// Public support page, required by the App Store's Support URL field
+app.use('/support', express.static(path.join(__dirname, 'public', 'support')));
+
 // API routes
 app.use('/api/events', eventsRouter);   // public, used by the mobile app
 app.use('/api/admin', adminRouter);     // protected, used by the admin panel

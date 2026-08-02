@@ -12,10 +12,20 @@
       "distribution": "internal"
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "ios": {
+        "image": "latest"
+      }
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "ascAppId": "6797089599",
+        "ascApiKeyPath": "./AuthKey_C2WT9HHFAU.p8",
+        "ascApiKeyId": "C2WT9HHFAU",
+        "ascApiKeyIssuerId": "1c39c904-e588-441f-8905-820f3454d76f"
+      }
+    }
   }
 }
